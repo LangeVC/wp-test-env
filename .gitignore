@@ -64,10 +64,10 @@ coverage/
 _internal/
 analysis/
 
-# Elementify-specific test files (not for public repository)
-tests/*elementify*
-scripts/*elementify*
-scripts/setup-api-key.sh
+# Elementify-specific test files (now included as examples)
+# tests/*elementify*  # Now included as examples
+# scripts/*elementify*  # Now included as examples
+# scripts/setup-api-key.sh  # Now included as example
 
 # Example/test API key configuration files
 *-api-key.example
