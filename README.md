@@ -255,6 +255,90 @@ git push origin feature/awesome-feature
 | REST API Request | < 100ms | Minimal | Local network conditions |
 | Database Query | < 50ms | Low | Optimized MySQL configuration |
 
+## 🔌 Plugin Testing Framework
+
+This environment includes a comprehensive testing framework for WordPress plugins with REST API endpoints. The framework provides tools for testing plugin installation, activation, API endpoints, and authentication.
+
+### Plugin API Testing
+
+The environment includes example test scripts that demonstrate how to test WordPress plugin REST APIs. To run the example tests:
+
+```bash
+# Run WordPress health check (verifies environment is running)
+./tests/test-wordpress-health.sh
+
+# Run plugin activation test (requires a plugin zip file)
+./tests/test-plugin-activation.sh plugins/your-plugin.zip
+
+# Review example test scripts for implementation patterns:
+# - tests/test-plugin-api.sh.example - Complete API test template
+# - tests/test-helpers.sh - Shared test utilities
+```
+
+### Authentication Requirements
+
+Many plugins require authentication via API keys or tokens. The testing framework includes utilities for managing authentication:
+
+```bash
+# Example: Setting up API key authentication
+echo "YOURPLUGIN_API_KEY=your_api_key_here" >> .env
+
+# Example test script for API key validation is available at:
+# scripts/setup-api-key.sh.example
+```
+
+### Test Coverage Framework
+
+The testing framework supports comprehensive test coverage:
+
+- **Basic API Connectivity**: Verify plugin namespace and activation
+- **Authentication**: Test API key validation and security
+- **CRUD Operations**: Test create, read, update, delete operations
+- **Error Handling**: Test error responses and edge cases
+- **Performance**: Test response times under load
+- **Integration**: Test integration with WordPress core and other plugins
+
+### Production Validation
+
+A successful test suite validates that your plugin is ready for production deployment. Test completion indicates:
+
+- ✅ Plugin correctly installed and activated
+- ✅ REST API endpoints properly registered
+- ✅ Authentication system functional (if applicable)
+- ✅ Core functionality operational
+- ✅ Error handling properly implemented
+- ✅ Ready for production use
+
+### Troubleshooting Plugin Tests
+
+**API Authentication Errors:**
+```bash
+# Check if your plugin's API keys are configured
+docker exec wptesting-wordpress wp option get yourplugin_api_keys --allow-root
+
+# Reset plugin activation
+docker exec wptesting-wordpress wp plugin deactivate your-plugin --allow-root
+docker exec wptesting-wordpress wp plugin activate your-plugin --allow-root
+```
+
+**REST Endpoint 404 Errors:**
+```bash
+# Verify REST API is working
+curl http://localhost:8082/wp-json/
+
+# Check your plugin's namespace
+curl http://localhost:8082/wp-json/yourplugin/v1
+```
+
+**Plugin Activation Issues:**
+```bash
+# Check plugin status
+docker exec wptesting-wordpress wp plugin status your-plugin --allow-root
+
+# Review error logs
+docker logs wptesting-wordpress --tail 50
+```
+
 ## 🚨 Troubleshooting
 
 ### Common Issues

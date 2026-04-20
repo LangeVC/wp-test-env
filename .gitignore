@@ -63,3 +63,12 @@ coverage/
 # Internal documentation and analysis (not for public repository)
 _internal/
 analysis/
+
+# Elementify-specific test files (not for public repository)
+tests/*elementify*
+scripts/*elementify*
+scripts/setup-api-key.sh
+
+# Example/test API key configuration files
+*-api-key.example
+.env.*.example

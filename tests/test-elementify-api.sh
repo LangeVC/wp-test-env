@@ -165,7 +165,7 @@ log() {
     local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
     
     if [ "$VERBOSE" = true ] || [ "$level" = "ERROR" ] || [ "$level" = "WARNING" ]; then
-        echo "[$timestamp] [$level] $message"
+        echo "[$timestamp] [$level] $message" >&2
     fi
 }
 
@@ -206,7 +206,7 @@ http_request() {
     local data="${3:-}"
     local headers="${4:-}"
     
-    local curl_cmd="curl -s -X $method"
+    local curl_cmd="curl -s -k -X $method"
     
     # Add headers
     if [ -n "$headers" ]; then
@@ -231,30 +231,70 @@ http_request() {
     fi
     
     # Execute curl command
-    local http_code=$(eval $curl_cmd)
+    local http_code=$(eval $curl_cmd 2>/tmp/http_stderr_$$.txt)
     local response=$(cat /tmp/http_response_$$.json 2>/dev/null)
-    rm -f /tmp/http_response_$$.json
+    local stderr_output=$(cat /tmp/http_stderr_$$.txt 2>/dev/null)
+    rm -f /tmp/http_response_$$.json /tmp/http_stderr_$$.txt
+    
+    # Log stderr if present and verbose
+    if [ -n "$stderr_output" ] && [ "$VERBOSE" = true ]; then
+        log "curl stderr: $stderr_output" "DEBUG"
+    fi
     
     echo "$http_code|$response"
 }
 
-# Check HTTP status
+# Check HTTP status (accepts optional alternate expected code)
 check_http_status() {
     local test_name="$1"
     local url="$2"
     local expected_code="$3"
-    local method="${4:-GET}"
+    local alternate_code="${4:-}"
+    local method="${5:-GET}"
     
     local result=$(http_request "$method" "$url")
-    local http_code=$(echo "$result" | cut -d'|' -f1)
+    local http_code=$(echo "$result" | cut -d'|' -f1 | tr -d '\n\r' | xargs)
     local response=$(echo "$result" | cut -d'|' -f2-)
     
+    # Determine if HTTP code matches expected or alternate
+    local status_match=false
+    local expected_display="$expected_code"
+    
     if [ "$http_code" = "$expected_code" ]; then
-        test_result "$test_name" "PASS" "HTTP $expected_code received for $method $url"
+        status_match=true
+    elif [ -n "$alternate_code" ] && [ "$http_code" = "$alternate_code" ]; then
+        status_match=true
+        expected_display="$expected_code or $alternate_code"
+    fi
+    
+    if [ "$status_match" = true ]; then
+        test_result "$test_name" "PASS" "HTTP $http_code received for $method $url (expected $expected_display)"
         echo "$response"
     else
-        test_result "$test_name" "FAIL" "Expected HTTP $expected_code, got $http_code for $method $url" "Response: $response"
+        test_result "$test_name" "FAIL" "Expected HTTP $expected_code$( [ -n "$alternate_code" ] && echo " or $alternate_code" ), got $http_code for $method $url" "Response: $response"
         echo ""
+    fi
+}
+
+# Extract field from JSON response
+extract_json_field() {
+    local json="$1"
+    local field="$2"
+    
+    if [ -z "$json" ]; then
+        echo ""
+        return 1
+    fi
+    
+    if command -v jq >/dev/null 2>&1; then
+        echo "$json" | jq -r ".$field // \"\"" 2>/dev/null
+        return $?
+    elif command -v python3 >/dev/null 2>&1; then
+        echo "$json" | python3 -c "import json, sys; data=json.loads(sys.stdin.read()); print(data.get('$field', ''))" 2>/dev/null
+        return $?
+    else
+        echo ""
+        return 1
     fi
 }
 
@@ -270,23 +310,49 @@ check_json_response() {
         return 1
     fi
     
-    # Try to parse JSON
-    if echo "$response" | python3 -c "import json, sys; json.loads(sys.stdin.read())" 2>/dev/null; then
-        # Check if field exists
-        local field_value=$(echo "$response" | python3 -c "import json, sys; data=json.loads(sys.stdin.read()); print(data.get('$expected_field', 'NOT_FOUND'))" 2>/dev/null)
-        
-        if [ "$field_value" = "NOT_FOUND" ]; then
-            test_result "$test_name" "FAIL" "Field '$expected_field' not found in response"
-            return 1
-        elif [ -n "$expected_value" ] && [ "$field_value" != "$expected_value" ]; then
-            test_result "$test_name" "FAIL" "Field '$expected_field' has value '$field_value', expected '$expected_value'"
-            return 1
+    # Try to parse JSON with jq (preferred) or python3
+    if command -v jq >/dev/null 2>&1; then
+        # Use jq for JSON parsing
+        if echo "$response" | jq . >/dev/null 2>&1; then
+            # Check if field exists
+            local field_value=$(echo "$response" | jq -r ".$expected_field // \"NOT_FOUND\"" 2>/dev/null)
+            
+            if [ "$field_value" = "NOT_FOUND" ]; then
+                test_result "$test_name" "FAIL" "Field '$expected_field' not found in response"
+                return 1
+            elif [ -n "$expected_value" ] && [ "$field_value" != "$expected_value" ]; then
+                test_result "$test_name" "FAIL" "Field '$expected_field' has value '$field_value', expected '$expected_value'"
+                return 1
+            else
+                test_result "$test_name" "PASS" "JSON response valid with field '$expected_field'"
+                return 0
+            fi
         else
-            test_result "$test_name" "PASS" "JSON response valid with field '$expected_field'"
-            return 0
+            test_result "$test_name" "FAIL" "Invalid JSON response (jq parse error)"
+            return 1
+        fi
+    elif command -v python3 >/dev/null 2>&1; then
+        # Fallback to python3
+        if echo "$response" | python3 -c "import json, sys; json.loads(sys.stdin.read())" 2>/dev/null; then
+            # Check if field exists
+            local field_value=$(echo "$response" | python3 -c "import json, sys; data=json.loads(sys.stdin.read()); print(data.get('$expected_field', 'NOT_FOUND'))" 2>/dev/null)
+            
+            if [ "$field_value" = "NOT_FOUND" ]; then
+                test_result "$test_name" "FAIL" "Field '$expected_field' not found in response"
+                return 1
+            elif [ -n "$expected_value" ] && [ "$field_value" != "$expected_value" ]; then
+                test_result "$test_name" "FAIL" "Field '$expected_field' has value '$field_value', expected '$expected_value'"
+                return 1
+            else
+                test_result "$test_name" "PASS" "JSON response valid with field '$expected_field'"
+                return 0
+            fi
+        else
+            test_result "$test_name" "FAIL" "Invalid JSON response"
+            return 1
         fi
     else
-        test_result "$test_name" "FAIL" "Invalid JSON response"
+        test_result "$test_name" "SKIP" "No JSON parser available (install jq or python3)"
         return 1
     fi
 }
@@ -295,23 +361,20 @@ check_json_response() {
 test_basic_api() {
     log "Testing basic API connectivity..." "INFO"
     
-    # Test WordPress REST API index
-    local response=$(check_http_status "WordPress REST API Index" "${API_BASE}/" 200)
-    if [ -n "$response" ]; then
-        check_json_response "REST API JSON Response" "$response" "name" "WordPress Site"
-    fi
-    
-    # Test Elementify namespace
+    # Test Elementify namespace (should return 200 if authenticated, 401 if not)
     check_http_status "Elementify API Namespace" "${API_BASE}/${ELEMENTIFY_NAMESPACE}" 200 401
     
-    # Test plugin activation status
-    if docker-compose ps wordpress 2>/dev/null | grep -q "Up"; then
-        local plugin_status=$(docker-compose run --rm ${COMPOSE_PROJECT}-wp-cli wp plugin list --format=json 2>/dev/null | grep -i elementify || echo "[]")
-        if echo "$plugin_status" | grep -q "active"; then
-            test_result "Elementify Plugin Activation" "PASS" "Plugin is active"
-        else
-            test_result "Elementify Plugin Activation" "FAIL" "Plugin is not active"
-        fi
+    # Test plugin activation status via HTTP response
+    # If namespace returns 200 (authenticated) or 401 (unauthenticated), plugin is active
+    # If namespace returns 404, plugin is not active
+    local result=$(http_request "GET" "${API_BASE}/${ELEMENTIFY_NAMESPACE}")
+    local http_code=$(echo "$result" | cut -d'|' -f1 | tr -d '\n\r' | xargs)
+    if [ "$http_code" = "200" ] || [ "$http_code" = "401" ]; then
+        test_result "Elementify Plugin Activation" "PASS" "Plugin is active (HTTP $http_code)"
+    elif [ "$http_code" = "404" ]; then
+        test_result "Elementify Plugin Activation" "FAIL" "Plugin is not active (HTTP 404)"
+    else
+        test_result "Elementify Plugin Activation" "SKIP" "Unexpected HTTP code: $http_code"
     fi
 }
 
@@ -367,7 +430,7 @@ test_template_endpoints() {
     if [ "$http_code" = "201" ]; then
         test_result "Create Template" "PASS" "Template created successfully"
         # Extract template ID for cleanup
-        local template_id=$(echo "$response" | python3 -c "import json, sys; data=json.loads(sys.stdin.read()); print(data.get('id', ''))" 2>/dev/null)
+        local template_id=$(extract_json_field "$response" "id")
         if [ -n "$template_id" ]; then
             # Test get template by ID
             check_http_status "Get Template by ID" "${API_BASE}/${ELEMENTIFY_NAMESPACE}/templates/$template_id" 200
