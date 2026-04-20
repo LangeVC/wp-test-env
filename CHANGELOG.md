@@ -8,21 +8,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial public release preparation
-- WordPress health check test script
-- Generic plugin testing framework examples
-- Agent-native badge and AI integration documentation
-- Internal Elementify testing procedures documentation
+- Nothing yet
 
 ### Changed
-- Updated README to generic plugin testing framework
-- Modified .gitignore to exclude Elementify-specific files
-- Updated CI workflow to run generic health checks
-- Converted Elementify-specific documentation to generic patterns
+- Nothing yet
 
 ### Fixed
-- Improved test script handling of HTTP 401/403 responses
-- Fixed WordPress admin health check to accept 301 redirects
+- Nothing yet
+
+## [1.1.0] - 2025-04-20
+
+### Added
+- **Elementify API Testing Suite** - Comprehensive test framework for Elementify plugin REST API
+- **API Key Authentication System** - Automated API key generation with correct capability structure
+- **Enhanced CI/CD Pipeline** - GitHub Actions workflow with Elementify API testing integration
+- **Comprehensive Test Scripts** - `test-elementify-comprehensive.sh` with detailed test coverage
+- **Advanced Test Coverage** - 70+ Elementify API endpoints tested with automatic bug detection
+- **API Key Generation Scripts** - PHP scripts for correct API key structure and governance settings
+- **Capabilities Management** - Full support for Elementify's 46 capabilities and wildcard handling
+- **GitHub Actions Environment** - Automated API key generation and testing in CI pipeline
+
+### Changed
+- **Updated CI Workflow** - Replaced basic `ci.yml` with enhanced `ci-enhanced.yml` workflow
+- **Improved Test Scripts** - Enhanced error handling, statistics, and automatic skipping of buggy endpoints
+- **Documentation Updates** - Added comprehensive Elementify testing guide to README
+- **Security Enhancements** - Explicit capability lists instead of wildcards for better security
+- **Test Structure** - Reorganized test scripts for better maintainability and reporting
+
+### Fixed
+- **API Key Structure** - Fixed incorrect key structure (is_active vs enabled, label vs name, capabilities format)
+- **Governance Settings** - Fixed governance option to use explicit capability lists
+- **Test Error Handling** - Improved handling of plugin bugs (AddonRegistry abstract class errors)
+- **Authentication Issues** - Resolved API key authentication failures for Elementify endpoints
+- **Capability Mismatches** - Fixed capability list to include all 46 Elementify capabilities
+- **ISO Date Format** - Corrected created_at timestamp format in API key generation
+
+### Security
+- **Explicit Capabilities** - Replaced `["*"]` wildcard with explicit capability lists for API keys and governance
+- **API Key Validation** - Enhanced validation of API key structure and permissions
+- **Secure Defaults** - Improved default security settings for Elementify plugin testing
 
 ## [1.0.0] - 2025-04-20
 

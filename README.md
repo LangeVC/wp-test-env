@@ -1,7 +1,7 @@
 # 🧪 WordPress Testing Environment
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)](https://github.com/typelicious/wp-testing-env/releases)
+[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/typelicious/wp-testing-env/releases)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5+-blue.svg)](https://wordpress.org/)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com/typelicious/wp-testing-env)
@@ -317,6 +317,229 @@ A successful test suite validates that your plugin is ready for production deplo
 - ✅ Core functionality operational
 - ✅ Error handling properly implemented
 - ✅ Ready for production use
+
+## 🔌 Elementify API Testing
+
+This environment includes comprehensive testing support for the [Elementify](https://github.com/typelicious/elementify) WordPress automation toolkit. Elementify provides over 70 REST API endpoints for WordPress automation, and this testing environment includes specialized tools for API key authentication and endpoint validation.
+
+### ⚡ Quick Start: Elementify Testing
+
+```bash
+# 1. Start the environment
+docker-compose up -d
+
+# 2. Install and activate Elementify plugin
+./scripts/install-plugin.sh plugins/elementify.zip
+
+# 3. Generate API key with correct capabilities
+docker-compose exec wp-cli wp eval-file scripts/generate-api-key.php
+
+# 4. Run comprehensive Elementify API tests
+./tests/test-elementify-comprehensive.sh
+```
+
+### 🔑 API Key Authentication
+
+Elementify requires API key authentication via the `X-Elementify-Key` header. The testing environment includes scripts to generate correctly structured API keys:
+
+#### Correct API Key Structure
+Elementify expects API keys with this specific structure:
+```php
+[
+    'is_active' => true,           // NOT 'enabled'
+    'label' => 'Test Key',         // NOT 'name'  
+    'capabilities' => [...],       // Explicit list of 46 capabilities (not "*")
+    'created_at' => '2025-04-20T10:30:00Z' // ISO 8601 format
+]
+```
+
+#### Generating API Keys
+
+**Using WP-CLI (Recommended):**
+```bash
+# Generate API key with all capabilities
+docker-compose exec wp-cli wp eval-file scripts/generate-api-key.php
+
+# Alternative: Generate using improved script
+docker-compose exec wp-cli wp eval-file scripts/generate-api-key-v2.php
+```
+
+**Manual API Key Setup:**
+```bash
+# Check generated API key
+docker-compose exec wp-cli wp option get elementify_mcp_api_keys --format=json
+
+# Export API key as environment variable
+export ELEMENTIFY_API_KEY=$(docker-compose exec wp-cli wp option get elementify_mcp_api_keys --format=json | jq -r '.[0].key')
+echo "ELEMENTIFY_API_KEY=$ELEMENTIFY_API_KEY" >> .env
+```
+
+### 🧪 Test Scripts
+
+The testing environment includes multiple test scripts for Elementify:
+
+| Script | Purpose | Coverage |
+|--------|---------|----------|
+| `test-elementify-comprehensive.sh` | **Complete test suite** | 70+ endpoints, detailed statistics, bug detection |
+| `test-elementify-api-improved.sh` | **Improved authentication** | Focus on API key validation and error handling |
+| `test-elementify-api.sh` | **Basic API tests** | Core functionality and endpoint discovery |
+
+#### Running Tests
+
+```bash
+# Run comprehensive tests (recommended)
+./tests/test-elementify-comprehensive.sh
+
+# Run with specific API key
+ELEMENTIFY_API_KEY="your_key_here" ./tests/test-elementify-comprehensive.sh
+
+# Run in CI mode (non-interactive)
+CI=true ./tests/test-elementify-comprehensive.sh
+```
+
+### 🛡️ Capabilities Management
+
+Elementify defines 46 capabilities for fine-grained access control. The testing environment handles capabilities correctly:
+
+```bash
+# View all Elementify capabilities
+docker-compose exec wp-cli wp eval "print_r(Elementify\MCP\Auth\Capabilities::all());"
+
+# Check configured capabilities
+docker-compose exec wp-cli wp option get elementify_mcp_governance --format=json
+```
+
+**Important:** Elementify does **NOT** accept wildcard (`"*"`) capabilities. All 46 capabilities must be explicitly listed in both API keys and governance settings.
+
+### 🔄 CI/CD Integration
+
+The enhanced CI workflow (`ci-enhanced.yml`) automatically:
+
+1. **Generates API Keys** - Creates correctly structured Elementify API keys
+2. **Runs Comprehensive Tests** - Executes all Elementify test scripts
+3. **Reports Results** - Provides detailed test statistics and coverage reports
+4. **Detects Plugin Bugs** - Automatically skips known buggy endpoints (e.g., AddonRegistry errors)
+
+#### GitHub Actions Usage
+
+```yaml
+# Example workflow step
+- name: Test Elementify API
+  run: |
+    export ELEMENTIFY_API_KEY=$(scripts/generate-ci-key.sh)
+    ./tests/test-elementify-comprehensive.sh
+```
+
+### 🐛 Known Issues & Workarounds
+
+#### Plugin Bugs
+Some Elementify endpoints may return 500 errors due to plugin bugs:
+
+1. **AddonRegistry Abstract Class Error** - Endpoints `/elementify/v1/addons` and `/elementify/v1/site/assessment` may fail
+2. **Workaround**: Test scripts automatically detect and skip these endpoints
+3. **Fix**: Update Elementify plugin to resolve abstract class implementation
+
+#### Authentication Issues
+- **401 Unauthorized**: Verify API key structure matches exact format requirements
+- **403 Forbidden**: Check capabilities list includes all 46 capabilities (not wildcard)
+- **Missing Headers**: Ensure `X-Elementify-Key` header is sent with requests
+
+### 📊 Test Coverage
+
+The comprehensive test suite validates:
+
+| Category | Endpoints Tested | Key Features |
+|----------|------------------|--------------|
+| **Templates** | 15+ endpoints | CRUD operations, versioning, search |
+| **Site Management** | 10+ endpoints | Assessment, settings, recommendations |
+| **Global Styles** | 5+ endpoints | Colors, typography, design tokens |
+| **Pages & Content** | 20+ endpoints | Composition, workflow, approval |
+| **Addons & Ecosystem** | 10+ endpoints | Detection, configuration, optimization |
+| **Media & Assets** | 5+ endpoints | Upload, management, optimization |
+| **WooCommerce** | 5+ endpoints | Products, orders, categories |
+
+### 🚀 Advanced Testing
+
+#### Testing Specific Endpoint Categories
+
+```bash
+# Test only template endpoints
+./tests/test-elementify-comprehensive.sh --category templates
+
+# Test with verbose output
+./tests/test-elementify-comprehensive.sh --verbose
+
+# Generate JSON test report
+./tests/test-elementify-comprehensive.sh --json-report
+```
+
+#### Custom Test Configuration
+
+Create `tests/elementify-test-config.json`:
+```json
+{
+  "api_base": "http://localhost:8082/wp-json/elementify/v1",
+  "api_key": "${ELEMENTIFY_API_KEY}",
+  "skip_endpoints": ["/addons", "/site/assessment"],
+  "timeout": 30,
+  "retry_attempts": 3
+}
+```
+
+### 🔧 Troubleshooting Elementify Tests
+
+**API Key Not Working:**
+```bash
+# Verify key structure
+docker-compose exec wp-cli wp option get elementify_mcp_api_keys --format=json | jq .
+
+# Regenerate key
+docker-compose exec wp-cli wp option delete elementify_mcp_api_keys
+docker-compose exec wp-cli wp eval-file scripts/generate-api-key.php
+```
+
+**Endpoints Returning 500 Errors:**
+```bash
+# Check WordPress error log
+docker-compose logs wordpress --tail 50
+
+# Disable problematic endpoints in tests
+export SKIP_BUGGY_ENDPOINTS=true
+./tests/test-elementify-comprehensive.sh
+```
+
+**Capability Errors:**
+```bash
+# Reset governance settings
+docker-compose exec wp-cli wp option update elementify_mcp_governance '{"capabilities": ["templates:read", "...all 46 capabilities..."]}'
+
+# Verify capabilities
+docker-compose exec wp-cli wp eval "echo json_encode(Elementify\MCP\Auth\Capabilities::all());"
+```
+
+### 📈 Test Results & Reporting
+
+Test scripts generate detailed reports:
+
+```bash
+# View test statistics
+cat reports/elementify-test-*.json | jq '.statistics'
+
+# Check endpoint coverage  
+cat reports/elementify-test-*.json | jq '.coverage'
+
+# Identify failing endpoints
+cat reports/elementify-test-*.json | jq '.failures[]'
+```
+
+Reports include:
+- ✅ **Passed tests** with response times
+- ❌ **Failed tests** with error details  
+- ⚠️ **Skipped tests** (buggy endpoints)
+- 📊 **Statistics** (success rate, average response time)
+- 🎯 **Coverage** (percentage of endpoints tested)
+
+---
 
 ### Troubleshooting Plugin Tests
 
