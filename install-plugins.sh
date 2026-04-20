@@ -25,7 +25,7 @@ for plugin_zip in plugins/*.zip; do
         docker cp "$plugin_zip" ${COMPOSE_PROJECT}-wordpress:/tmp/
         
         # Extract in container (WordPress container doesn't have unzip, use PHP)
-        docker-compose -f docker-compose.yml exec -T ${COMPOSE_PROJECT}-wordpress bash -c "
+        docker compose -f docker-compose.yml exec -T ${COMPOSE_PROJECT}-wordpress bash -c "
             cd /tmp && 
             php -r '\$zip = new ZipArchive; \$res = \$zip->open(\"$plugin_name.zip\"); if (\$res === TRUE) { \$zip->extractTo(\"/var/www/html/wp-content/plugins/\"); \$zip->close(); echo \"Extracted $plugin_name\n\"; } else { echo \"Failed to extract $plugin_name\n\"; }'
         " || echo "Warning: Failed to extract $plugin_name"
@@ -35,7 +35,7 @@ done
 echo "Plugin installation complete!"
 echo ""
 echo "To activate plugins, use:"
-echo "  docker-compose run --rm ${COMPOSE_PROJECT}-wp-cli wp plugin activate <plugin-name>"
+echo "  docker compose run --rm ${COMPOSE_PROJECT}-wp-cli wp plugin activate <plugin-name>"
 echo ""
 echo "To list installed plugins:"
-echo "  docker-compose run --rm ${COMPOSE_PROJECT}-wp-cli wp plugin list"
+echo "  docker compose run --rm ${COMPOSE_PROJECT}-wp-cli wp plugin list"
