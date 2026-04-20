@@ -133,17 +133,90 @@ docs/
 ## 🏷️ Versioning
 
 We follow [Semantic Versioning](https://semver.org/):
-- **MAJOR**: Breaking changes
-- **MINOR**: New features (backward compatible)
-- **PATCH**: Bug fixes (backward compatible)
+- **MAJOR** version (X.0.0): Breaking API changes
+- **MINOR** version (0.X.0): New features (backward compatible)
+- **PATCH** version (0.0.X): Bug fixes (backward compatible)
+
+Version is tracked in the `VERSION` file at the project root.
 
 ## 📦 Release Process
 
-1. Update version in relevant files
-2. Update CHANGELOG.md
-3. Create release tag
-4. Build and test release
-5. Publish release notes
+### Standard Release Flow
+
+1. **Prepare Release Branch**
+   ```bash
+   git checkout -b release/vX.Y.Z
+   ```
+
+2. **Update Version**
+   - Update `VERSION` file with new version number
+   - Update version badge in `README.md` if using static badge
+   - Update any other version references
+
+3. **Update CHANGELOG.md**
+   - Move "Unreleased" section to new version with release date
+   - Follow Keep a Changelog format
+   - Include all significant changes since last release
+
+4. **Run Full Test Suite**
+   ```bash
+   # Run all tests
+   ./tests/test-wordpress-health.sh
+   ./tests/test-plugin-activation.sh example-plugin.zip
+   # Run CI tests locally if possible
+   ```
+
+5. **Commit Release Preparation**
+   ```bash
+   git add VERSION CHANGELOG.md README.md
+   git commit -m "Release vX.Y.Z"
+   ```
+
+6. **Create and Push Tag**
+   ```bash
+   git tag -a vX.Y.Z -m "WordPress Testing Environment vX.Y.Z"
+   git push origin vX.Y.Z
+   git push origin release/vX.Y.Z
+   ```
+
+7. **Create GitHub Release**
+   - Go to GitHub repository → Releases → Draft new release
+   - Select the created tag (vX.Y.Z)
+   - Use "WordPress Testing Environment vX.Y.Z" as title
+   - Copy CHANGELOG.md section for this version as release notes
+   - Attach any relevant artifacts
+   - Mark as pre-release if applicable (alpha/beta)
+   - Publish release
+
+8. **Merge to Main**
+   - Create PR from release branch to main
+   - Ensure CI passes
+   - Merge after review
+
+9. **Post-Release Tasks**
+   - Update "Unreleased" section in CHANGELOG.md for next development cycle
+   - Announce release in appropriate channels
+   - Update documentation if needed
+
+### CI/CD Integration
+
+The release process is integrated with GitHub Actions:
+- **CI Tests**: Run on every push (see `.github/workflows/ci.yml`)
+- **Release Validation**: All tests must pass before creating release
+- **Automated Version Checking**: Future automation can validate version consistency
+
+### Release Frequency
+- **Major Releases**: As needed for breaking changes
+- **Minor Releases**: Approximately quarterly for new features
+- **Patch Releases**: As needed for critical bug fixes
+
+### Emergency Hotfix Procedure
+For critical security issues:
+1. Branch from last stable release tag
+2. Apply minimal fix
+3. Create patch release (e.g., v1.0.1)
+4. Follow standard release process
+5. Merge forward to main and other active branches
 
 ## ❓ Getting Help
 
