@@ -1,0 +1,55 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs and reports
+*.log
+logs/
+reports/
+
+# Vendor assets (downloaded libraries)
+vendor-assets/
+
+# WordPress uploads (user-generated content)
+uploads/
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker volumes (auto-generated)
+mysql_data/
+wordpress_data/
+
+# Plugin files - DO NOT commit actual plugin files to public repository
+plugins/*.zip
+plugins/*activator*
+plugins/*pro*
+plugins/*elementify*
+!plugins/README.md
+
+# Backup files
+*.bak
+*.backup
+backups/
+
+# Test reports
+test-results/
+coverage/

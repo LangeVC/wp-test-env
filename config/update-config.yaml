@@ -1,0 +1,103 @@
+# WordPress Testing Environment Update Configuration
+# Controls automatic updates for the testing environment
+
+version: "1.0"
+
+# Update settings
+updates:
+  # Check for updates automatically
+  enabled: true
+  
+  # How often to check for updates (in hours)
+  check_interval_hours: 24
+  
+  # What to update
+  components:
+    wordpress:
+      enabled: true
+      # WordPress version to track (latest, specific version)
+      track: "latest"
+      # Auto-update WordPress core
+      auto_update: false
+    
+    docker_images:
+      enabled: true
+      # Images to update
+      images:
+        - wordpress:latest
+        - mysql:8.0
+        - phpmyadmin:latest
+        - mailhog/mailhog:latest
+        - wordpress:cli
+      # Auto-pull updated images
+      auto_pull: false
+    
+    plugins:
+      enabled: false
+      # Note: Plugin updates should be tested, not auto-applied
+      auto_update: false
+    
+    themes:
+      enabled: false
+      auto_update: false
+
+# Update policies
+policies:
+  # Backup before updating
+  backup_before_update: true
+  
+  # Test after updating
+  test_after_update: true
+  
+  # Notify on update
+  notify:
+    enabled: false
+    # Options: console, email, slack, webhook
+    method: "console"
+  
+  # Rollback on failure
+  rollback_on_failure: true
+  
+  # Maximum allowed downtime (in seconds)
+  max_downtime_seconds: 300
+
+# Backup settings
+backup:
+  enabled: true
+  location: "./backups"
+  retention_days: 7
+  # What to backup
+  include:
+    - database
+    - uploads
+    - plugins
+    - themes
+    - config
+
+# Testing after update
+post_update_tests:
+  enabled: true
+  tests:
+    - wordpress_health
+    - database_connection
+    - plugin_compatibility
+    - rest_api
+  timeout_seconds: 600
+
+# Notifications (if enabled)
+notifications:
+  email:
+    from: "wp-testing@localhost"
+    to: "admin@localhost"
+    smtp_server: "localhost:1025"  # MailHog
+  
+  slack:
+    webhook_url: ""
+    channel: "#wordpress-updates"
+  
+  webhook:
+    url: ""
+    headers: {}
+
+# Manual override
+manual_mode: false

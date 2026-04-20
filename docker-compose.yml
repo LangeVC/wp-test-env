@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # MySQL database for WordPress
+  mysql:
+    image: mysql:8.0
+    container_name: ${COMPOSE_PROJECT_NAME:-wptesting}-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-wordpress_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wordpress_test}
+      MYSQL_USER: ${MYSQL_USER:-wordpress}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-wordpress_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-wordpress_root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wp-test-network
+
+  # WordPress with debugging enabled
+  wordpress:
+    image: wordpress:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-wptesting}-wordpress
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: ${MYSQL_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wordpress_password}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress_test}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX:-wp_}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG:-1}
+      WORDPRESS_DEBUG_DISPLAY: ${WORDPRESS_DEBUG_DISPLAY:-1}
+      WORDPRESS_DEBUG_LOG: ${WORDPRESS_DEBUG_LOG:-1}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'local');
+        define('WP_DEVELOPMENT_MODE', 'all');
+        define('SCRIPT_DEBUG', true);
+        define('SAVEQUERIES', true);
+        define('WP_MAIL_SMTP_DEBUG', true);
+        // Enable error logging
+        @ini_set('display_errors', '1');
+        @ini_set('log_errors', '1');
+        @ini_set('error_log', '/var/www/html/wp-content/debug.log');
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./plugins:/var/www/html/wp-content/plugins:cached
+      - ./themes:/var/www/html/wp-content/themes:cached
+      - ./uploads:/var/www/html/wp-content/uploads:cached
+    ports:
+      - "${WORDPRESS_PORT:-8082}:80"
+    restart: unless-stopped
+    networks:
+      - wp-test-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # WP-CLI for command-line WordPress management
+  wp-cli:
+    image: wordpress:cli
+    container_name: ${COMPOSE_PROJECT_NAME:-wptesting}-wp-cli
+    depends_on:
+      - wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./plugins:/var/www/html/wp-content/plugins:cached
+      - ./themes:/var/www/html/wp-content/themes:cached
+      - ./uploads:/var/www/html/wp-content/uploads:cached
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: ${MYSQL_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wordpress_password}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress_test}
+    networks:
+      - wp-test-network
+    restart: "no"  # Don't restart, only run when needed
+
+  # phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-wptesting}-phpmyadmin
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 256M
+    ports:
+      - "${PHPMYADMIN_PORT:-8083}:80"
+    networks:
+      - wp-test-network
+
+  # MailHog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-wptesting}-mailhog
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_WEB_PORT:-8025}:8025"
+    networks:
+      - wp-test-network
+
+volumes:
+  mysql_data:
+  wordpress_data:
+
+networks:
+  wp-test-network:
+    driver: bridge
