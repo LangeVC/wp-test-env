@@ -4,8 +4,9 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5+-blue.svg)](https://wordpress.org/)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com/typelicious/wp-testing-env)
+[![Agent-Native](https://img.shields.io/badge/Agent--Native-✓-green.svg)](https://github.com/typelicious/wp-testing-env)
 
-> Professional Docker-based WordPress testing environment for plugin development, quality assurance, and automated testing workflows.
+> Professional Docker-based WordPress testing environment for plugin development, quality assurance, automated testing workflows, and AI agent integration.
 
 ## 🚀 Quick Start
 
@@ -59,6 +60,13 @@ docker-compose up -d
 - Customizable environment variables
 - Production/Staging/Development modes
 - Automated backup and restore
+
+### 🤖 **AI Agent Integration**
+- **Agent-native design** - Optimized for AI agent interaction and automation
+- **REST API-first architecture** - Complete WordPress API coverage for agent access
+- **Structured test outputs** - Machine-readable test results and health checks
+- **Automated workflow support** - Compatible with SkillWeave and faigate AI orchestration
+- **Production validation** - Agent-verifiable deployment readiness checks
 
 ## 📁 Project Structure
 
