@@ -39,11 +39,17 @@ mysql_data/
 wordpress_data/
 
 # Plugin files - DO NOT commit actual plugin files to public repository
+plugins/*
+!plugins/README.md
+# Also ignore specific patterns as backup
 plugins/*.zip
 plugins/*activator*
 plugins/*pro*
 plugins/*elementify*
-!plugins/README.md
+
+# Theme files - WordPress themes (automatically downloaded)
+themes/*
+!themes/index.php
 
 # Backup files
 *.bak
@@ -53,3 +59,7 @@ backups/
 # Test reports
 test-results/
 coverage/
+
+# Internal documentation and analysis (not for public repository)
+_internal/
+analysis/
