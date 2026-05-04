@@ -7,8 +7,8 @@
 # Default settings for all plugins
 defaults:
   auto_activate: true
-  source: wordpress.org       # wordpress.org | url | local
-  install_priority: normal     # normal | early | late (controls install order)
+  source: wordpress.org
+  install_priority: normal
 
 # Plugin definitions
 plugins:
@@ -35,81 +35,76 @@ plugins:
     category: dev-tools
 
   # — Page Builders —
-  # Uncomment to enable. Premium plugins require `source: local` and
-  # the ZIP file placed in vendor-assets/ (or a custom path).
-  #
-  # - slug: elementor
-  #   name: Elementor
-  #   source: wordpress.org
-  #   category: page-builder
-  #
-  # - slug: elementor-pro
-  #   name: Elementor Pro
-  #   source: local
-  #   zip_path: vendor-assets/elementor-pro.zip
-  #   category: page-builder
-  #   install_priority: late
+  # Elementor Free from wordpress.org
+  - slug: elementor
+    name: Elementor
+    source: wordpress.org
+    category: page-builder
 
-  # — Form Builders —
-  # - slug: wpforms-lite
-  #   name: WPForms Lite
-  #   source: wordpress.org
-  #   category: forms
-  #
-  # - slug: contact-form-7
-  #   name: Contact Form 7
-  #   source: wordpress.org
-  #   category: forms
+  # Elementor Pro from local bundle
+  - slug: elementor-pro
+    name: Elementor Pro
+    source: local
+    zip_path: vendor-assets/elementor-pro.zip
+    category: page-builder
+    install_priority: late
 
-  # — SEO —
-  # - slug: wordpress-seo
-  #   name: Yoast SEO
-  #   source: wordpress.org
-  #   category: seo
+  # Elementor Pro Activator
+  - slug: elementor-pro-activator
+    name: Elementor Pro Activator
+    source: local
+    zip_path: vendor-assets/elementor-pro-activator.zip
+    category: page-builder
+    install_priority: late
 
-  # — E-Commerce —
-  # - slug: woocommerce
-  #   name: WooCommerce
-  #   source: wordpress.org
-  #   category: ecommerce
+  # — JetEngine / Crocoblock —
+  - slug: jet-engine
+    name: JetEngine
+    source: local
+    zip_path: vendor-assets/jet-engine.zip
+    category: elementor-addons
+    install_priority: late
 
-  # — Booking —
-  # - slug: ameliabooking
-  #   name: Amelia Booking
-  #   source: local
-  #   zip_path: vendor-assets/ameliabooking.zip
-  #   category: booking
+  - slug: crocoblock-activator
+    name: Crocoblock Activator
+    source: local
+    zip_path: vendor-assets/crocoblock-activator.zip
+    category: elementor-addons
+    install_priority: late
 
   # — Elementor Addons —
-  # - slug: essential-addons-for-elementor-lite
-  #   name: Essential Addons for Elementor
-  #   source: wordpress.org
-  #   category: elementor-addons
+  - slug: essential-addons-for-elementor-lite
+    name: Essential Addons for Elementor
+    source: wordpress.org
+    category: elementor-addons
 
 # ──────────────────────────────────────────────
 # Bundle definitions (premium + activator combos)
 # ──────────────────────────────────────────────
-# Use bundles to install a premium plugin together with its activator/null-plugin
-# in the correct order. Each bundle item can have its own license key injected.
-#
-# Example:
-# bundles:
-#   elementor-pro-bundle:
-#     description: "Elementor Pro with license bypass"
-#     plugins:
-#       - slug: elementor
-#         source: wordpress.org
-#         install_order: 1
-#       - slug: elementor-pro
-#         source: local
-#         zip_path: vendor-assets/elementor-pro.zip
-#         install_order: 2
-#       - slug: elementor-pro-activator
-#         source: local
-#         zip_path: vendor-assets/elementor-pro-activator.zip
-#         install_order: 3
-#         license:
-#           key: "your-license-key"
-#           method: wp_option         # wp_option | wp_config | filter
+bundles:
+  elementor-pro-bundle:
+    description: "Elementor Pro with license bypass"
+    plugins:
+      - slug: elementor
+        source: wordpress.org
+        install_order: 1
+      - slug: elementor-pro
+        source: local
+        zip_path: vendor-assets/elementor-pro.zip
+        install_order: 2
+      - slug: elementor-pro-activator
+        source: local
+        zip_path: vendor-assets/elementor-pro-activator.zip
+        install_order: 3
 
-bundles: {}
+  jet-engine-bundle:
+    description: "Crocoblock JetEngine with license bypass"
+    plugins:
+      - slug: jet-engine
+        source: local
+        zip_path: vendor-assets/jet-engine.zip
+        install_order: 1
+      - slug: crocoblock-activator
+        source: local
+        zip_path: vendor-assets/crocoblock-activator.zip
+        install_order: 2

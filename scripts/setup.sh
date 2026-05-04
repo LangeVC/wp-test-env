@@ -89,6 +89,16 @@ EOF
     fi
     set -a; source "$ENV_FILE"; set +a
     info "Environment loaded."
+
+    # ── Project Directory (isolated state) ─────────────────────────────────
+    if [ -n "${COMPOSE_PROJECT_DIR:-}" ]; then
+        PROJECT_DIR="${ROOT_DIR}/${COMPOSE_PROJECT_DIR}"
+        mkdir -p "${PROJECT_DIR}/uploads" "${PROJECT_DIR}/logs" "${PROJECT_DIR}/reports"
+        export PROJECT_DIR
+        info "Project directory: ${COMPOSE_PROJECT_DIR}"
+        # Redirect compose file to use project-specific volumes/paths
+        COMPOSE_FILE="${ROOT_DIR}/docker-compose.yml"
+    fi
 }
 
 # ── Docker ───────────────────────────────────────────────────────────────────
@@ -262,8 +272,12 @@ show_summary() {
     local PORT="${WORDPRESS_PORT:-8082}"
     echo ""
     echo "══════════════════════════════════════════════"
+    echo "══════════════════════════════════════════════"
     echo "  WordPress Testing Environment — Ready"
     echo "══════════════════════════════════════════════"
+    echo ""
+    echo "  Project:      ${COMPOSE_PROJECT_NAME:-wptesting}"
+    [ -n "${COMPOSE_PROJECT_DIR:-}" ] && echo "  State Dir:    ${COMPOSE_PROJECT_DIR}"
     echo ""
     echo "  WordPress:    http://localhost:${PORT}"
     echo "  Admin:        http://localhost:${PORT}/wp-admin"
@@ -273,10 +287,10 @@ show_summary() {
     echo "  Admin User:   ${WORDPRESS_ADMIN_USER:-admin}"
     echo "  Admin Pass:   ${WORDPRESS_ADMIN_PASSWORD:-admin}"
     echo ""
-    echo "  WP-CLI:       docker compose run --rm wp-cli wp <cmd>"
-    echo "  Logs:         docker compose logs -f wordpress"
-    echo "  Stop:         docker compose down"
-    echo "  Reset:        docker compose down -v && ./scripts/setup.sh --fresh"
+    echo "  WP-CLI:       docker compose -p ${COMPOSE_PROJECT_NAME:-wptesting} run --rm wp-cli wp <cmd>"
+    echo "  Logs:         docker compose -p ${COMPOSE_PROJECT_NAME:-wptesting} logs -f wordpress"
+    echo "  Stop:         docker compose -p ${COMPOSE_PROJECT_NAME:-wptesting} down"
+    echo "  Reset:        docker compose -p ${COMPOSE_PROJECT_NAME:-wptesting} down -v && ./scripts/setup.sh --fresh"
     echo "══════════════════════════════════════════════"
 }
 

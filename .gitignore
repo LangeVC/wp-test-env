@@ -59,6 +59,5 @@ backups/
 test-results/
 coverage/
 
-# Internal documentation (not for public repo)
-_internal/
-analysis/
+# Project environments (isolated state per project)
+envs/
