@@ -21,7 +21,8 @@ jobs:
       run: |
         # GitHub Actions has MySQL on 3306 — use 3307 in CI
         echo "MYSQL_PORT=3307" >> .env
-        docker compose up -d --wait
+        docker compose up -d
+        sleep 10
         docker compose ps
         
     - name: Check service status
