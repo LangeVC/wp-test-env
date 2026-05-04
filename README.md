@@ -13,15 +13,29 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/LangeVC/wp-testing-env.git
-cd wp-testing-env
-
-# Copy environment configuration
-cp .env.example .env
+git clone https://github.com/LangeVC/wp-test-env.git
+cd wp-test-env
 
 # One-click setup
 ./scripts/setup.sh
 ```
+
+### Using the Docker Image
+
+A pre-built Docker image is available via GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/langevc/wp-test-env:latest
+
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+           -v $(pwd):/env -w /env \
+           ghcr.io/langevc/wp-test-env:latest \
+           sh -c "cp .env.example .env && docker compose -f /env/docker-compose.yml up -d && /env/scripts/setup.sh"
+```
+
+### Download Release ZIP
+
+Each [GitHub Release](https://github.com/LangeVC/wp-test-env/releases) includes a ZIP with everything needed — no Git clone required.
 
 **Access Services:**
 - 🌐 **WordPress:** http://localhost:8082

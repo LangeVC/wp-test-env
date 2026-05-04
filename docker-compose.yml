@@ -1,5 +1,18 @@
 version: '3.8'
 
+# ────────────────────────────────────────────────────────────────────────────
+# WordPress Testing Environment
+# ────────────────────────────────────────────────────────────────────────────
+# Quick start:
+#   cp .env.example .env && docker compose up -d && ./scripts/setup.sh
+#
+# Using the pre-built Docker image (alternative to this compose file):
+#   docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+#              -v $(pwd):/env -w /env \
+#              ghcr.io/langevc/wp-test-env:latest \
+#              docker compose -f /env/docker-compose.yml up -d && /env/scripts/setup.sh
+# ────────────────────────────────────────────────────────────────────────────
+
 services:
   # MySQL database for WordPress
   mysql:
