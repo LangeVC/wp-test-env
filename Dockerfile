@@ -2,7 +2,7 @@
 # Builds a self-contained Docker image that bundles the compose environment
 # and setup scripts — ready to run via `docker run`.
 
-FROM alpine:3.21
+FROM alpine:3.23
 
 LABEL org.opencontainers.image.title="wp-test-env"
 LABEL org.opencontainers.image.description="WordPress Testing Environment — Docker Compose stack with one-click setup"
