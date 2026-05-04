@@ -1,11 +1,11 @@
 # 🧪 WordPress Testing Environment
 
+[![CI](https://github.com/LangeVC/wp-test-env/actions/workflows/ci.yml/badge.svg)](https://github.com/LangeVC/wp-test-env/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/LangeVC/wp-test-env/actions/workflows/codeql.yml/badge.svg)](https://github.com/LangeVC/wp-test-env/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/badge/Release-v2.0.0-blue.svg)](https://github.com/LangeVC/wp-test-env/releases)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Version](https://img.shields.io/badge/Version-2.0.0-blue.svg)](https://github.com/LangeVC/wp-testing-env/releases)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5+-blue.svg)](https://wordpress.org/)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com/LangeVC/wp-testing-env)
-[![Agent-Native](https://img.shields.io/badge/Agent--Native-✓-green.svg)](https://github.com/LangeVC/wp-testing-env)
 
 > Professional Docker-based WordPress testing environment for plugin development, quality assurance, automated testing workflows, and AI agent integration.
 
