@@ -9,6 +9,8 @@ jobs:
   # ── GitHub Release Asset (ZIP) ──────────────────────────────────────────
   package-zip:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       zip_name: ${{ steps.zip.outputs.name }}
     steps:
@@ -63,8 +65,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/wp-test-env:latest
-            ghcr.io/${{ github.repository_owner }}/wp-test-env:${{ github.ref_name }}
+            ghcr.io/langevc/wp-test-env:latest
+            ghcr.io/langevc/wp-test-env:${{ github.ref_name }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.version=${{ github.ref_name }}
