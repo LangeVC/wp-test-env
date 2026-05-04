@@ -19,29 +19,28 @@ jobs:
         
     - name: Start environment
       run: |
-        docker compose up -d
-        sleep 30  # Wait for services to start
+        # GitHub Actions has MySQL on 3306 — use 3307 in CI
+        echo "MYSQL_PORT=3307" >> .env
+        docker compose up -d --wait
+        docker compose ps
         
     - name: Check service status
       run: |
-        docker compose ps
         curl -f http://localhost:8082/ || echo "WordPress not ready"
-        
-    - name: Install plugins
+
+    - name: Install and setup WordPress
       run: |
-        chmod +x install-plugins.sh
-        ./install-plugins.sh
+        chmod +x scripts/setup.sh
+        ./scripts/setup.sh --skip-docker-start
         
     - name: Run WordPress health check
       run: |
         chmod +x tests/test-wordpress-health.sh
-        ./tests/test-wordpress-health.sh || echo "Health check failed, continuing..."
-    
-    - name: Run example plugin API test (demonstration)
+        ./tests/test-wordpress-health.sh
+
+    - name: Verify REST API
       run: |
-        # This demonstrates the test framework without requiring a specific plugin
-        echo "Running demonstration test..."
-        curl -f http://localhost:8082/wp-json/ || echo "WordPress REST API not accessible"
+        curl -fsS http://localhost:8082/wp-json/
         
     - name: Stop environment
       if: always()

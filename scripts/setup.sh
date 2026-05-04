@@ -5,7 +5,8 @@
 # Usage:
 #   ./scripts/setup.sh              # Full setup (Docker + WP + plugins)
 #   ./scripts/setup.sh --skip-plugins  # Skip plugin installation
-#   ./scripts/setup.sh --fresh       # Destroy volumes and start fresh
+#   ./scripts/setup.sh --fresh          # Destroy volumes and start fresh
+#   ./scripts/setup.sh --skip-docker-start  # Skip Docker start (containers already running)
 #
 # Requirements: Docker with Compose v2 plugin
 # =============================================================================
@@ -19,14 +20,16 @@ ENV_FILE="${ROOT_DIR}/.env"
 COMPOSE_CMD="docker compose"
 SKIP_PLUGINS=false
 FRESH_START=false
+SKIP_DOCKER_START=false
 
 # ── Args ────────────────────────────────────────────────────────────────────
 for arg in "$@"; do
     case $arg in
-        --skip-plugins) SKIP_PLUGINS=true ;;
-        --fresh)        FRESH_START=true ;;
+        --skip-plugins)       SKIP_PLUGINS=true ;;
+        --fresh)              FRESH_START=true ;;
+        --skip-docker-start)  SKIP_DOCKER_START=true ;;
         -h|--help)
-            echo "Usage: $0 [--skip-plugins] [--fresh]"
+            echo "Usage: $0 [--skip-plugins] [--fresh] [--skip-docker-start]"
             exit 0
             ;;
     esac
@@ -281,7 +284,11 @@ show_summary() {
 main() {
     check_prereqs
     load_env
-    start_containers
+    if $SKIP_DOCKER_START; then
+        info "Skipping Docker start (--skip-docker-start)"
+    else
+        start_containers
+    fi
     install_wordpress
     install_plugins
     install_bundles
