@@ -143,7 +143,7 @@ check_plugin_active() {
     local plugin_slug="$1"
     
     # Use WP-CLI to check if plugin is active
-    docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin is-active "$plugin_slug" > /dev/null 2>&1
+    docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin is-active "$plugin_slug" > /dev/null 2>&1
     return $?
 }
 
@@ -152,13 +152,13 @@ check_plugin_installed() {
     local plugin_slug="$1"
     
     # Use WP-CLI to check if plugin is installed
-    docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin is-installed "$plugin_slug" > /dev/null 2>&1
+    docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin is-installed "$plugin_slug" > /dev/null 2>&1
     return $?
 }
 
 # Function to get WordPress debug log
 get_debug_log() {
-    docker-compose -f ../docker/docker-compose.yml exec -T wordpress cat /var/www/html/wp-content/debug.log 2>/dev/null || echo "No debug.log found"
+    docker-compose -f ../docker-compose.yml exec -T wordpress cat /var/www/html/wp-content/debug.log 2>/dev/null || echo "No debug.log found"
 }
 
 # Function to check for PHP errors in debug log

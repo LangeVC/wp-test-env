@@ -32,7 +32,7 @@ usage() {
     echo "  --skip-cleanup       Don't cleanup after tests"
     echo ""
     echo "Examples:"
-    echo "  $0 elementify-2.0.0.zip"
+    echo "  $0 my-plugin-2.0.0.zip"
     echo "  $0 --plugin-name my-plugin ../build/my-plugin.zip"
     exit 0
 }
@@ -110,7 +110,7 @@ test_activation() {
         test_result "Plugin Active" "FAIL" "Plugin is not active"
         # Try to activate
         print_status "Attempting to activate plugin..."
-        if docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin activate "$plugin_name"; then
+        if docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin activate "$plugin_name"; then
             test_result "Plugin Activation Attempt" "PASS" "Activation command succeeded"
             # Check again
             if check_plugin_active "$plugin_name"; then
@@ -209,7 +209,7 @@ cleanup() {
     
     # Deactivate plugin
     print_status "Deactivating plugin..."
-    if docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin deactivate "$plugin_name" 2>/dev/null; then
+    if docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin deactivate "$plugin_name" 2>/dev/null; then
         test_result "Plugin Deactivation" "PASS" "Plugin deactivated"
     else
         test_result "Plugin Deactivation" "SKIP" "Plugin may not have been active"
@@ -217,7 +217,7 @@ cleanup() {
     
     # Delete plugin
     print_status "Deleting plugin..."
-    if docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin delete "$plugin_name" 2>/dev/null; then
+    if docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin delete "$plugin_name" 2>/dev/null; then
         test_result "Plugin Deletion" "PASS" "Plugin deleted"
     else
         test_result "Plugin Deletion" "SKIP" "Plugin may not have been installed"

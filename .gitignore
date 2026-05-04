@@ -8,7 +8,7 @@
 logs/
 reports/
 
-# Vendor assets (downloaded libraries)
+# Vendor assets (downloaded libraries and premium plugins)
 vendor-assets/
 
 # WordPress uploads (user-generated content)
@@ -38,16 +38,15 @@ Thumbs.db
 mysql_data/
 wordpress_data/
 
-# Plugin files - DO NOT commit actual plugin files to public repository
+# Plugin ZIPs — free dev tools are committed, everything else ignored
 plugins/*
 !plugins/README.md
-# Also ignore specific patterns as backup
-plugins/*.zip
-plugins/*activator*
-plugins/*pro*
-plugins/*elementify*
+!plugins/debug-bar.zip
+!plugins/query-monitor.zip
+!plugins/user-switching.zip
+!plugins/wordpress-importer.zip
 
-# Theme files - WordPress themes (automatically downloaded)
+# Themes and uploads
 themes/*
 !themes/index.php
 
@@ -60,15 +59,6 @@ backups/
 test-results/
 coverage/
 
-# Internal documentation and analysis (not for public repository)
+# Internal documentation (not for public repo)
 _internal/
 analysis/
-
-# Elementify-specific test files (now included as examples)
-# tests/*elementify*  # Now included as examples
-# scripts/*elementify*  # Now included as examples
-# scripts/setup-api-key.sh  # Now included as example
-
-# Example/test API key configuration files
-*-api-key.example
-.env.*.example

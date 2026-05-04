@@ -12,6 +12,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-wordpress_password}
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/config/mysql-init:/docker-entrypoint-initdb.d:ro
     ports:
       - "${MYSQL_PORT:-3306}:3306"
     restart: unless-stopped
@@ -54,6 +55,7 @@ services:
       - ./plugins:/var/www/html/wp-content/plugins:cached
       - ./themes:/var/www/html/wp-content/themes:cached
       - ./uploads:/var/www/html/wp-content/uploads:cached
+      - ./docker/config/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     ports:
       - "${WORDPRESS_PORT:-8082}:80"
     restart: unless-stopped
@@ -73,6 +75,7 @@ services:
       - ./plugins:/var/www/html/wp-content/plugins:cached
       - ./themes:/var/www/html/wp-content/themes:cached
       - ./uploads:/var/www/html/wp-content/uploads:cached
+      - ./scripts:/scripts:ro
     environment:
       WORDPRESS_DB_HOST: mysql:3306
       WORDPRESS_DB_USER: ${MYSQL_USER:-wordpress}

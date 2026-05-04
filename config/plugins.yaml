@@ -1,0 +1,115 @@
+# WordPress Testing Environment — Plugin Configuration
+# Declarative plugin management. The setup script reads this file and installs
+# all declared plugins into the running WordPress container.
+#
+# Version: 2.0
+
+# Default settings for all plugins
+defaults:
+  auto_activate: true
+  source: wordpress.org       # wordpress.org | url | local
+  install_priority: normal     # normal | early | late (controls install order)
+
+# Plugin definitions
+plugins:
+
+  # — Dev & Debug Tools —
+  - slug: query-monitor
+    name: Query Monitor
+    source: wordpress.org
+    category: dev-tools
+
+  - slug: debug-bar
+    name: Debug Bar
+    source: wordpress.org
+    category: dev-tools
+
+  - slug: user-switching
+    name: User Switching
+    source: wordpress.org
+    category: dev-tools
+
+  - slug: wordpress-importer
+    name: WordPress Importer
+    source: wordpress.org
+    category: dev-tools
+
+  # — Page Builders —
+  # Uncomment to enable. Premium plugins require `source: local` and
+  # the ZIP file placed in vendor-assets/ (or a custom path).
+  #
+  # - slug: elementor
+  #   name: Elementor
+  #   source: wordpress.org
+  #   category: page-builder
+  #
+  # - slug: elementor-pro
+  #   name: Elementor Pro
+  #   source: local
+  #   zip_path: vendor-assets/elementor-pro.zip
+  #   category: page-builder
+  #   install_priority: late
+
+  # — Form Builders —
+  # - slug: wpforms-lite
+  #   name: WPForms Lite
+  #   source: wordpress.org
+  #   category: forms
+  #
+  # - slug: contact-form-7
+  #   name: Contact Form 7
+  #   source: wordpress.org
+  #   category: forms
+
+  # — SEO —
+  # - slug: wordpress-seo
+  #   name: Yoast SEO
+  #   source: wordpress.org
+  #   category: seo
+
+  # — E-Commerce —
+  # - slug: woocommerce
+  #   name: WooCommerce
+  #   source: wordpress.org
+  #   category: ecommerce
+
+  # — Booking —
+  # - slug: ameliabooking
+  #   name: Amelia Booking
+  #   source: local
+  #   zip_path: vendor-assets/ameliabooking.zip
+  #   category: booking
+
+  # — Elementor Addons —
+  # - slug: essential-addons-for-elementor-lite
+  #   name: Essential Addons for Elementor
+  #   source: wordpress.org
+  #   category: elementor-addons
+
+# ──────────────────────────────────────────────
+# Bundle definitions (premium + activator combos)
+# ──────────────────────────────────────────────
+# Use bundles to install a premium plugin together with its activator/null-plugin
+# in the correct order. Each bundle item can have its own license key injected.
+#
+# Example:
+# bundles:
+#   elementor-pro-bundle:
+#     description: "Elementor Pro with license bypass"
+#     plugins:
+#       - slug: elementor
+#         source: wordpress.org
+#         install_order: 1
+#       - slug: elementor-pro
+#         source: local
+#         zip_path: vendor-assets/elementor-pro.zip
+#         install_order: 2
+#       - slug: elementor-pro-activator
+#         source: local
+#         zip_path: vendor-assets/elementor-pro-activator.zip
+#         install_order: 3
+#         license:
+#           key: "your-license-key"
+#           method: wp_option         # wp_option | wp_config | filter
+
+bundles: {}

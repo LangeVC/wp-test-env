@@ -7,7 +7,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/../.env"
-DOCKER_COMPOSE_FILE="${SCRIPT_DIR}/../docker/docker-compose.yml"
+DOCKER_COMPOSE_FILE="${SCRIPT_DIR}/../docker-compose.yml"
 
 # Colors for output
 RED='\033[0;31m'
@@ -94,7 +94,7 @@ wait_for_services() {
     # Wait for WordPress
     print_status "Waiting for WordPress..."
     ATTEMPT=1
-    WORDPRESS_PORT=${WORDPRESS_PORT:-8080}
+    WORDPRESS_PORT=${WORDPRESS_PORT:-8082}
     while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
         if curl -s -f "http://localhost:$WORDPRESS_PORT" > /dev/null; then
             print_status "WordPress is ready."

@@ -1,80 +1,40 @@
-# WordPress Testing Environment - Plugins
+# WordPress Testing Environment — Plugins
 
-This directory contains plugin ZIP files for the WordPress Testing Environment.
+This directory is volume-mounted into the WordPress container at
+`/var/www/html/wp-content/plugins/`.
 
-## Structure
+## How plugins are managed
 
-Place plugin ZIP files in this directory. The following naming convention is recommended:
+Plugins are declared in `config/plugins.yaml`. The setup script
+(`scripts/setup.sh`) reads this file and installs them via WP-CLI.
 
-- `{plugin-name}.zip` - Plugin files (free or pro versions)
-- `{plugin-name}-pro.zip` - Pro version plugins (if separate)
+Three source types are supported:
 
-## Important Notes
+| Source | Example | Notes |
+|--------|---------|-------|
+| `wordpress.org` | `query-monitor` | Pulled from WP.org via WP-CLI |
+| `local` | `vendor-assets/my-plugin.zip` | ZIP placed in `vendor-assets/` |
+| `url` | `https://example.com/plugin.zip` | Downloaded at install time |
 
-⚠️ **DO NOT COMMIT PROPRIETARY PLUGINS TO GIT**
+## What's committed
 
-This directory is configured to ignore all plugin files except ZIP archives via `.gitignore`:
-```gitignore
-plugins/
-!plugins/*.zip
-!plugins/README.md
-```
+Only ZIP files of **freely distributable** plugins belong in this repo.
+Premium/proprietary plugins go into `vendor-assets/` (gitignored).
 
-Only ZIP files and this README will be tracked in version control. Extracted plugin directories should remain in `.gitignore`.
+| Plugin | Type |
+|--------|------|
+| `debug-bar.zip` | Dev tool |
+| `query-monitor.zip` | Dev tool |
+| `user-switching.zip` | Dev tool |
+| `wordpress-importer.zip` | Dev tool |
 
-## Recommended Plugins for Testing
+## Adding a plugin
 
-For a comprehensive WordPress testing environment, consider these plugins:
+1. Add the slug to `config/plugins.yaml` (for wp.org plugins)
+2. Or place the ZIP in `vendor-assets/` and add a `local` entry
+3. Run `./scripts/setup.sh` to install
 
-### Essential Testing Plugins
-- Query Monitor
-- Debug Bar
-- User Switching
-- WordPress Importer
+## Bundles
 
-### Elementor Ecosystem
-- Elementor (free)
-- Elementor Pro (requires license)
-- Essential Addons for Elementor
-- Premium Addons for Elementor
-- Happy Addons for Elementor
-
-### Page Builders & Addons
-- Brizy
-- Beaver Builder
-- Oxygen Builder
-- Visual Composer/WPBakery
-
-### Form Builders
-- WPForms
-- Gravity Forms
-- Contact Form 7
-
-### E-commerce
-- WooCommerce
-- Easy Digital Downloads
-
-### Booking & Scheduling
-- Amelia Booking
-- Simply Schedule Appointments
-
-### SEO & Analytics
-- Yoast SEO
-- Rank Math
-- Google Site Kit
-
-## Usage
-
-The testing environment includes automated scripts to install plugins from ZIP files:
-
-```bash
-# Install a plugin from ZIP
-./scripts/install-plugin.sh plugins/query-monitor.zip
-
-# Install multiple plugins
-./scripts/install-plugin.sh plugins/plugin1.zip plugins/plugin2.zip
-```
-
-## License & Copyright
-
-Only include plugins you have the right to distribute. For proprietary plugins, ensure you have the appropriate licenses for testing purposes.
+Use `config/plugins.yaml` bundles for premium plugins that need an activator
+or license key injection. See the bundled section of that file for examples.

@@ -1,11 +1,11 @@
 # 🧪 WordPress Testing Environment
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/typelicious/wp-testing-env/releases)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Version](https://img.shields.io/badge/Version-2.0.0-blue.svg)](https://github.com/LangeVC/wp-testing-env/releases)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5+-blue.svg)](https://wordpress.org/)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com/typelicious/wp-testing-env)
-[![Agent-Native](https://img.shields.io/badge/Agent--Native-✓-green.svg)](https://github.com/typelicious/wp-testing-env)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com/LangeVC/wp-testing-env)
+[![Agent-Native](https://img.shields.io/badge/Agent--Native-✓-green.svg)](https://github.com/LangeVC/wp-testing-env)
 
 > Professional Docker-based WordPress testing environment for plugin development, quality assurance, automated testing workflows, and AI agent integration.
 
@@ -13,17 +13,14 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/typelicious/wp-testing-env.git
+git clone https://github.com/LangeVC/wp-testing-env.git
 cd wp-testing-env
 
 # Copy environment configuration
 cp .env.example .env
 
-# Start the environment
-docker-compose up -d
-
-# Run WordPress setup
-./scripts/setup-wordpress-fixed.sh
+# One-click setup
+./scripts/setup.sh
 ```
 
 **Access Services:**
@@ -79,18 +76,27 @@ wp-testing-env/
 ├── README.md                    # This file
 │
 ├── scripts/                     # Utility scripts
-│   ├── setup-wordpress-fixed.sh # WordPress installation
+│   ├── setup.sh                 # One-click environment setup
 │   ├── install-plugin.sh        # Plugin installer
+│   ├── setup-wordpress-fixed.sh # WordPress installation
 │   └── init-test-environment.sh # Environment initialization
+│
+├── config/                      # Configuration files
+│   ├── plugins.yaml             # Declarative plugin management
+│   ├── php.ini                  # Custom PHP configuration
+│   └── update-config.yaml       # Update automation config
+│
+├── docker/                      # Docker configuration
+│   └── config/                  # Container configs (php.ini, mysql-init)
 │
 ├── plugins/                     # WordPress plugins
 │   ├── README.md                # Plugin guidelines
-│   └── *.zip                    # Plugin archives (gitignored)
+│   └── *.zip                    # Plugin archives
 │
+├── vendor-assets/               # Premium plugins & assets (gitignored)
 ├── themes/                      # WordPress themes
 ├── uploads/                     # Media uploads
-├── logs/                        # Application logs
-└── reports/                     # Test reports
+└── tests/                       # Test scripts
 ```
 
 ## 🔧 Configuration
@@ -127,39 +133,70 @@ upload_max_filesize = 64M
 post_max_size = 64M
 ```
 
-## 🛠️ Usage Examples
+## 🛠️ Usage
 
-### Installing Plugins
+### Plugin Management
+
+Plugins are declared in `config/plugins.yaml` and installed automatically by `scripts/setup.sh`:
+
+```yaml
+# config/plugins.yaml
+plugins:
+  - slug: woocommerce
+    name: WooCommerce
+    source: wordpress.org
+  - slug: my-premium-plugin
+    name: My Premium Plugin
+    source: local
+    zip_path: vendor-assets/my-premium-plugin.zip
+```
+
+Three source types are supported:
+
+| Source | Description |
+|--------|-------------|
+| `wordpress.org` | Pulled from the WordPress.org plugin directory |
+| `local` | ZIP file placed in `vendor-assets/` (gitignored) |
+| `url` | Downloaded from a URL at install time |
+
+For premium plugins that need a license bypass or activator, use **bundles**:
+
+```yaml
+bundles:
+  elementor-pro-bundle:
+    description: "Elementor Pro"
+    plugins:
+      - slug: elementor
+        source: wordpress.org
+        install_order: 1
+      - slug: elementor-pro
+        source: local
+        zip_path: vendor-assets/elementor-pro.zip
+        install_order: 2
+      - slug: elementor-pro-activator
+        source: local
+        zip_path: vendor-assets/elementor-pro-activator.zip
+        install_order: 3
+        license:
+          key: "your-license-key"
+          method: wp_option
+```
+
+### Installing Plugins Manually
 
 ```bash
 # Install a plugin from ZIP file
 ./scripts/install-plugin.sh plugins/query-monitor.zip
 
-# Install multiple plugins
-./scripts/install-plugin.sh plugins/plugin1.zip plugins/plugin2.zip
-```
-
-### Using WP-CLI
-
-```bash
-# List installed plugins
-docker-compose exec wp-cli wp plugin list
-
-# Activate a plugin
-docker-compose exec wp-cli wp plugin activate elementor
-
-# Create test content
-docker-compose exec wp-cli wp post create \
-  --post_title="Test Post" \
-  --post_content="Test content" \
-  --post_status=publish
+# Install from wordpress.org via WP-CLI
+docker compose run --rm wp-cli wp plugin install woocommerce --activate
 ```
 
 ### Testing Workflow
 
 1. **Setup Environment:**
    ```bash
-   ./scripts/init-test-environment.sh
+   ./scripts/setup.sh
    ```
 
 2. **Install Test Plugin:**
@@ -169,14 +206,8 @@ docker-compose exec wp-cli wp post create \
 
 3. **Run Automated Tests:**
    ```bash
-   # Custom test scripts
-   ./tests/activation-test.sh
-   ./tests/rest-api-test.sh
-   ```
-
-4. **Generate Reports:**
-   ```bash
-   # Reports saved to ./reports/
+   ./tests/test-wordpress-health.sh
+   ./tests/test-plugin-activation.sh path/to/plugin.zip
    ```
 
 ## 📊 Testing Scenarios
@@ -233,7 +264,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ```bash
 # Fork and clone
-git clone https://github.com/typelicious/wp-testing-env.git
+git clone https://github.com/LangeVC/wp-testing-env.git
 
 # Create feature branch
 git checkout -b feature/awesome-feature
@@ -309,409 +340,100 @@ The testing framework supports comprehensive test coverage:
 
 ### Production Validation
 
-A successful test suite validates that your plugin is ready for production deployment. Test completion indicates:
-
+A successful test suite validates that your plugin is ready for production. Test completion indicates:
 - ✅ Plugin correctly installed and activated
 - ✅ REST API endpoints properly registered
 - ✅ Authentication system functional (if applicable)
 - ✅ Core functionality operational
 - ✅ Error handling properly implemented
-- ✅ Ready for production use
 
-## 🔌 Elementify API Testing
-
-This environment includes comprehensive testing support for the [Elementify](https://github.com/typelicious/elementify) WordPress automation toolkit. Elementify provides over 70 REST API endpoints for WordPress automation, and this testing environment includes specialized tools for API key authentication and endpoint validation.
-
-### ⚡ Quick Start: Elementify Testing
-
-```bash
-# 1. Start the environment
-docker-compose up -d
-
-# 2. Install and activate Elementify plugin
-./scripts/install-plugin.sh plugins/elementify.zip
-
-# 3. Generate API key with correct capabilities
-docker-compose exec wp-cli wp eval-file scripts/generate-api-key.php
-
-# 4. Run comprehensive Elementify API tests
-./tests/test-elementify-comprehensive.sh
-```
-
-### 🔑 API Key Authentication
-
-Elementify requires API key authentication via the `X-Elementify-Key` header. The testing environment includes scripts to generate correctly structured API keys:
-
-#### Correct API Key Structure
-Elementify expects API keys with this specific structure:
-```php
-[
-    'is_active' => true,           // NOT 'enabled'
-    'label' => 'Test Key',         // NOT 'name'  
-    'capabilities' => [...],       // Explicit list of 46 capabilities (not "*")
-    'created_at' => '2025-04-20T10:30:00Z' // ISO 8601 format
-]
-```
-
-#### Generating API Keys
-
-**Using WP-CLI (Recommended):**
-```bash
-# Generate API key with all capabilities
-docker-compose exec wp-cli wp eval-file scripts/generate-api-key.php
-
-# Alternative: Generate using improved script
-docker-compose exec wp-cli wp eval-file scripts/generate-api-key-v2.php
-```
-
-**Manual API Key Setup:**
-```bash
-# Check generated API key
-docker-compose exec wp-cli wp option get elementify_mcp_api_keys --format=json
-
-# Export API key as environment variable
-export ELEMENTIFY_API_KEY=$(docker-compose exec wp-cli wp option get elementify_mcp_api_keys --format=json | jq -r '.[0].key')
-echo "ELEMENTIFY_API_KEY=$ELEMENTIFY_API_KEY" >> .env
-```
-
-### 🧪 Test Scripts
-
-The testing environment includes multiple test scripts for Elementify:
-
-| Script | Purpose | Coverage |
-|--------|---------|----------|
-| `test-elementify-comprehensive.sh` | **Complete test suite** | 70+ endpoints, detailed statistics, bug detection |
-| `test-elementify-api-improved.sh` | **Improved authentication** | Focus on API key validation and error handling |
-| `test-elementify-api.sh` | **Basic API tests** | Core functionality and endpoint discovery |
-
-#### Running Tests
-
-```bash
-# Run comprehensive tests (recommended)
-./tests/test-elementify-comprehensive.sh
-
-# Run with specific API key
-ELEMENTIFY_API_KEY="your_key_here" ./tests/test-elementify-comprehensive.sh
-
-# Run in CI mode (non-interactive)
-CI=true ./tests/test-elementify-comprehensive.sh
-```
-
-### 🛡️ Capabilities Management
-
-Elementify defines 46 capabilities for fine-grained access control. The testing environment handles capabilities correctly:
-
-```bash
-# View all Elementify capabilities
-docker-compose exec wp-cli wp eval "print_r(Elementify\MCP\Auth\Capabilities::all());"
-
-# Check configured capabilities
-docker-compose exec wp-cli wp option get elementify_mcp_governance --format=json
-```
-
-**Important:** Elementify does **NOT** accept wildcard (`"*"`) capabilities. All 46 capabilities must be explicitly listed in both API keys and governance settings.
-
-### 🔄 CI/CD Integration
-
-The enhanced CI workflow (`ci-enhanced.yml`) automatically:
-
-1. **Generates API Keys** - Creates correctly structured Elementify API keys
-2. **Runs Comprehensive Tests** - Executes all Elementify test scripts
-3. **Reports Results** - Provides detailed test statistics and coverage reports
-4. **Detects Plugin Bugs** - Automatically skips known buggy endpoints (e.g., AddonRegistry errors)
-
-#### GitHub Actions Usage
-
-```yaml
-# Example workflow step
-- name: Test Elementify API
-  run: |
-    export ELEMENTIFY_API_KEY=$(scripts/generate-ci-key.sh)
-    ./tests/test-elementify-comprehensive.sh
-```
-
-### 🐛 Known Issues & Workarounds
-
-#### Plugin Bugs
-Some Elementify endpoints may return 500 errors due to plugin bugs:
-
-1. **AddonRegistry Abstract Class Error** - Endpoints `/elementify/v1/addons` and `/elementify/v1/site/assessment` may fail
-2. **Workaround**: Test scripts automatically detect and skip these endpoints
-3. **Fix**: Update Elementify plugin to resolve abstract class implementation
-
-#### Authentication Issues
-- **401 Unauthorized**: Verify API key structure matches exact format requirements
-- **403 Forbidden**: Check capabilities list includes all 46 capabilities (not wildcard)
-- **Missing Headers**: Ensure `X-Elementify-Key` header is sent with requests
-
-### 📊 Test Coverage
-
-The comprehensive test suite validates:
-
-| Category | Endpoints Tested | Key Features |
-|----------|------------------|--------------|
-| **Templates** | 15+ endpoints | CRUD operations, versioning, search |
-| **Site Management** | 10+ endpoints | Assessment, settings, recommendations |
-| **Global Styles** | 5+ endpoints | Colors, typography, design tokens |
-| **Pages & Content** | 20+ endpoints | Composition, workflow, approval |
-| **Addons & Ecosystem** | 10+ endpoints | Detection, configuration, optimization |
-| **Media & Assets** | 5+ endpoints | Upload, management, optimization |
-| **WooCommerce** | 5+ endpoints | Products, orders, categories |
-
-### 🚀 Advanced Testing
-
-#### Testing Specific Endpoint Categories
-
-```bash
-# Test only template endpoints
-./tests/test-elementify-comprehensive.sh --category templates
-
-# Test with verbose output
-./tests/test-elementify-comprehensive.sh --verbose
-
-# Generate JSON test report
-./tests/test-elementify-comprehensive.sh --json-report
-```
-
-#### Custom Test Configuration
-
-Create `tests/elementify-test-config.json`:
-```json
-{
-  "api_base": "http://localhost:8082/wp-json/elementify/v1",
-  "api_key": "${ELEMENTIFY_API_KEY}",
-  "skip_endpoints": ["/addons", "/site/assessment"],
-  "timeout": 30,
-  "retry_attempts": 3
-}
-```
-
-### 🔧 Troubleshooting Elementify Tests
-
-**API Key Not Working:**
-```bash
-# Verify key structure
-docker-compose exec wp-cli wp option get elementify_mcp_api_keys --format=json | jq .
-
-# Regenerate key
-docker-compose exec wp-cli wp option delete elementify_mcp_api_keys
-docker-compose exec wp-cli wp eval-file scripts/generate-api-key.php
-```
-
-**Endpoints Returning 500 Errors:**
-```bash
-# Check WordPress error log
-docker-compose logs wordpress --tail 50
-
-# Disable problematic endpoints in tests
-export SKIP_BUGGY_ENDPOINTS=true
-./tests/test-elementify-comprehensive.sh
-```
-
-**Capability Errors:**
-```bash
-# Reset governance settings
-docker-compose exec wp-cli wp option update elementify_mcp_governance '{"capabilities": ["templates:read", "...all 46 capabilities..."]}'
-
-# Verify capabilities
-docker-compose exec wp-cli wp eval "echo json_encode(Elementify\MCP\Auth\Capabilities::all());"
-```
-
-### 📈 Test Results & Reporting
-
-Test scripts generate detailed reports:
-
-```bash
-# View test statistics
-cat reports/elementify-test-*.json | jq '.statistics'
-
-# Check endpoint coverage  
-cat reports/elementify-test-*.json | jq '.coverage'
-
-# Identify failing endpoints
-cat reports/elementify-test-*.json | jq '.failures[]'
-```
-
-Reports include:
-- ✅ **Passed tests** with response times
-- ❌ **Failed tests** with error details  
-- ⚠️ **Skipped tests** (buggy endpoints)
-- 📊 **Statistics** (success rate, average response time)
-- 🎯 **Coverage** (percentage of endpoints tested)
-
----
-
-### Troubleshooting Plugin Tests
-
-**API Authentication Errors:**
-```bash
-# Check if your plugin's API keys are configured
-docker exec wptesting-wordpress wp option get yourplugin_api_keys --allow-root
-
-# Reset plugin activation
-docker exec wptesting-wordpress wp plugin deactivate your-plugin --allow-root
-docker exec wptesting-wordpress wp plugin activate your-plugin --allow-root
-```
-
-**REST Endpoint 404 Errors:**
-```bash
-# Verify REST API is working
-curl http://localhost:8082/wp-json/
-
-# Check your plugin's namespace
-curl http://localhost:8082/wp-json/yourplugin/v1
-```
-
-**Plugin Activation Issues:**
-```bash
-# Check plugin status
-docker exec wptesting-wordpress wp plugin status your-plugin --allow-root
-
-# Review error logs
-docker logs wptesting-wordpress --tail 50
-```
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-**Port Conflicts:**
-```bash
-# Check used ports
-lsof -i :8082
-
-# Update .env with different ports
-WORDPRESS_PORT=8083
-PHPMYADMIN_PORT=8084
-```
-
-**Permission Errors:**
-```bash
-# Reset Docker permissions
-docker-compose down -v
-sudo chown -R $USER:$USER .
-docker-compose up -d
-```
-
-**Database Issues:**
-```bash
-# Check MySQL health
-docker-compose exec mysql mysqladmin ping
-
-# Reset database
-docker-compose down -v
-docker-compose up -d
-```
-
-### Debugging
-
-View application logs:
-```bash
-# WordPress logs
-docker-compose logs wordpress
-
-# MySQL logs
-docker-compose logs mysql
-
-# All services
-docker-compose logs -f
-```
-
-Check WordPress debug log:
-```bash
-docker-compose exec wordpress tail -f /var/www/html/wp-content/debug.log
-```
-
-## 🔄 Automatic Updates
-
-Keep your testing environment up-to-date with the built-in update system.
-
-### Update Configuration
-
-The update system is configured via `config/update-config.yaml`:
-
-```yaml
-# Example configuration
-updates:
-  enabled: true
-  check_interval_hours: 24
-  components:
-    wordpress:
-      enabled: true
-      track: "latest"
-      auto_update: false
-    docker_images:
-      enabled: true
-      auto_pull: false
-```
-
-### Using the Update Script
-
-```bash
-# Check for updates (dry run)
-./scripts/update-environment.sh --dry-run
-
-# Apply updates
-./scripts/update-environment.sh
-
-# Force update (ignore check interval)
-./scripts/update-environment.sh --force
-
-# Verbose output
-./scripts/update-environment.sh --verbose
-```
-
-### Update Features
-
-- **Smart Update Checks**: Only updates when needed based on configurable intervals
-- **Component Selection**: Choose which components to update (WordPress, Docker images, plugins, themes)
-- **Safety First**: Automatic backups before updates, rollback on failure
-- **Post-Update Testing**: Verify environment health after updates
-- **Configurable Policies**: Control backup retention, notifications, and update behavior
-
-### Prerequisites
-
-The update script requires `yq` for YAML processing:
-
-```bash
-# macOS
-brew install yq
-
-# Linux
-sudo snap install yq
-
-# Alternative: Install from GitHub
-# See: https://github.com/mikefarah/yq
-```
-
-### Automated Updates (Cron)
-
-For automated updates, add to crontab:
-
-```bash
-# Daily update check at 2 AM
-0 2 * * * cd /path/to/wp-testing-env && ./scripts/update-environment.sh >> logs/updates.log 2>&1
-
-# Weekly forced update on Sundays at 3 AM
-0 3 * * 0 cd /path/to/wp-testing-env && ./scripts/update-environment.sh --force >> logs/updates.log 2>&1
-```
-
-## 📚 Documentation
-
-- [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md)
-- [Plugin Testing Workflow](docs/PLUGIN_TESTING.md)
-- [API Testing Guide](docs/API_TESTING.md)
-- [Performance Testing](docs/PERFORMANCE_TESTING.md)
-
-## 🏷️ Related Projects
-
-- [**SkillWeave**](https://github.com/typelicious/SkillWeave) - AI-powered development workflow automation
-- [**faigate**](https://github.com/fusionAIze/faigate) - FusionAIze Gateway for AI model orchestration
-- [**Elementify**](https://github.com/typelicious/elementify) - WordPress automation toolkit
+## 🔗 References
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Apache License 2.0** — see the [LICENSE](LICENSE) file for details.
+
+## 🔧 Creating a Customized Test Environment
+
+This repository provides the base WordPress stack. For project-specific testing (e.g. a specific plugin, theme, or addon ecosystem), create an overlay by extending the configuration:
+
+### 1. Custom Plugin Set
+
+Copy `config/plugins.yaml` and add your plugins:
+
+```yaml
+# my-project-plugins.yaml
+plugins:
+  - slug: woocommerce
+    name: WooCommerce
+    source: wordpress.org
+  - slug: my-plugin
+    name: My Plugin
+    source: local
+    zip_path: vendor-assets/my-plugin.zip
+```
+
+Then point the setup script at it:
+
+```bash
+PLUGINS_CONFIG=config/my-project-plugins.yaml ./scripts/setup.sh
+```
+
+### 2. Premium Plugin Bundles
+
+Use bundles in your plugin config for premium plugins that require a license bypass or activator:
+
+```yaml
+bundles:
+  pro-bundle:
+    description: "Premium plugin with activator"
+    plugins:
+      - slug: free-base
+        source: wordpress.org
+        install_order: 1
+      - slug: pro-version
+        source: local
+        zip_path: vendor-assets/pro-version.zip
+        install_order: 2
+      - slug: pro-activator
+        source: local
+        zip_path: vendor-assets/pro-activator.zip
+        install_order: 3
+        license:
+          key: "your-license-key"
+          method: wp_option
+```
+
+Place premium ZIPs in `vendor-assets/` (gitignored — never committed).
+
+### 3. Project-Specific Test Scripts
+
+Add your test scripts to your project repo. Use the existing test helpers:
+
+```bash
+#!/bin/bash
+source wp-testing-env/tests/test-helpers.sh
+
+# Your project-specific tests here
+check_wp_ready
+check_plugin_active "my-plugin"
+# ...
+```
+
+### 4. CI/CD Integration
+
+Example GitHub Actions workflow calling the base setup:
+
+```yaml
+- name: Start test environment
+  run: |
+    cd wp-testing-env
+    ./scripts/setup.sh
+- name: Run project tests
+  run: |
+    cd my-project
+    ./tests/run.sh
+```
 
 ## 🙏 Acknowledgments
 
@@ -721,11 +443,11 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 📞 Support
 
-- 📖 **Documentation:** [GitHub Wiki](https://github.com/typelicious/wp-testing-env/wiki)
-- 🐛 **Issues:** [GitHub Issues](https://github.com/typelicious/wp-testing-env/issues)
-- 💬 **Discussion:** [GitHub Discussions](https://github.com/typelicious/wp-testing-env/discussions)
-- 🚀 **Features:** [GitHub Projects](https://github.com/typelicious/wp-testing-env/projects)
+- 📖 **Documentation:** [GitHub Wiki](https://github.com/LangeVC/wp-testing-env/wiki)
+- 🐛 **Issues:** [GitHub Issues](https://github.com/LangeVC/wp-testing-env/issues)
+- 💬 **Discussion:** [GitHub Discussions](https://github.com/LangeVC/wp-testing-env/discussions)
+- 🚀 **Features:** [GitHub Projects](https://github.com/LangeVC/wp-testing-env/projects)
 
 ---
 
-**Maintained by [typelicious](https://github.com/typelicious) • Part of the FusionAIze ecosystem**
+**Maintained by [LangeVC](https://github.com/LangeVC) • [langevc.com](https://langevc.com)**

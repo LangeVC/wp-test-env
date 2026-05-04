@@ -13,7 +13,7 @@
 
 If you discover a security vulnerability, please follow these steps:
 
-1. **Email**: Send details to [INSERT SECURITY EMAIL]
+1. **Email**: Send details to hello@langevc.com
 2. **Encryption**: Use our PGP key for sensitive reports
 3. **Template**: Include the following information:
    - Description of the vulnerability
@@ -111,11 +111,11 @@ We follow responsible disclosure practices:
 
 ## 📞 Contact
 
-**Security Team**: [INSERT SECURITY EMAIL]
+**Security Team**: hello@langevc.com
 
-**PGP Key**: [INSERT PGP KEY FINGERPRINT]
+**PGP Key**: Available on request
 
-**Emergency Contact**: [INSERT EMERGENCY CONTACT]
+**Emergency Contact**: hello@langevc.com
 
 ---
 

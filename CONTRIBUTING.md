@@ -9,7 +9,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 ## 🌟 How Can I Contribute?
 
 ### Reporting Bugs
-Before creating bug reports, please check the [existing issues](https://github.com/typelicious/wp-testing-env/issues) to avoid duplicates.
+Before creating bug reports, please check the [existing issues](https://github.com/LangeVC/wp-testing-env/issues) to avoid duplicates.
 
 **Great Bug Reports** should include:
 - Clear, descriptive title
@@ -221,8 +221,8 @@ For critical security issues:
 ## ❓ Getting Help
 
 - **Documentation**: Check the [README](README.md) first
-- **Issues**: Search existing [issues](https://github.com/typelicious/wp-testing-env/issues)
-- **Discussions**: Join [GitHub Discussions](https://github.com/typelicious/wp-testing-env/discussions)
+- **Issues**: Search existing [issues](https://github.com/LangeVC/wp-testing-env/issues)
+- **Discussions**: Join [GitHub Discussions](https://github.com/LangeVC/wp-testing-env/discussions)
 
 ## 🙏 Acknowledgments
 

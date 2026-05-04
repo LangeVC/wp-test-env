@@ -16,6 +16,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Nothing yet
 
+## [2.0.0] - 2026-05-04
+
+### Added
+- **Declarative Plugin Management** — `config/plugins.yaml` with support for wp.org, local, and URL plugin sources
+- **Bundle System** — Premium plugin bundles with ordered installation and license key injection
+- **One-Click Setup** — `scripts/setup.sh` handles Docker, WordPress, plugins, and bundles in one command
+- **Docker Config Structure** — `docker/config/` with custom php.ini and mysql-init mounts
+- **Plugin Configuration** — `PLUGINS_CONFIG` env var for pointing to custom plugin YAML
+
+### Changed
+- **Removed all Elementify-specific artifacts** — test scripts, API key generators, CI workflow, internal docs
+- **Removed Elementor Pro Activator plugin** — replaced by declarative bundle system in `config/plugins.yaml`
+- **Cleaned plugin directory** — only free dev tools (Query Monitor, Debug Bar, User Switching, WP Importer) committed
+- **Updated docker-compose.yml** — added custom php.ini mount, mysql-init mount, scripts mount on wp-cli
+- **Fixed init-test-environment.sh** — corrected docker-compose.yml path
+- **Fixed install-plugin.sh** — corrected docker-compose.yml path references
+- **Updated .gitignore** — explicit allow-list for committed plugin ZIPs
+- **Updated .env.example** — sensible defaults included, no empty fields
+- **Updated README.md** — removed 220-line Elementify section, added plugin management and bundle docs
+- **Fixed SECURITY.md and CODE_OF_CONDUCT.md** — replaced placeholder emails
+
+### Removed
+- `_internal/` — Elementify bridge analysis and testing procedures
+- `reports/` — Elementify test run reports
+- `.elementify-api-key` — real API key file (security risk)
+- `generate-api-key.php`, `generate-api-key-v2.php` — Elementify API key generators
+- `scripts/setup-api-key.sh`, `scripts/setup-elementify-for-ci.sh`, `scripts/setup-elementify-api-key.php`, `scripts/generate-correct-key.php` — Elementify-specific scripts
+- `tests/test-elementify-api.sh`, `tests/test-elementify-comprehensive.sh`, etc. — Elementify test suites
+- `.github/workflows/ci-enhanced.yml` — Elementify-specific CI
+- `docker-compose.yml.backup` — redundant backup file
+- All extracted plugin directories and premium plugin ZIPs from `plugins/`
+- `elementify-testing-feedback.md` — testing notes
+
+### Security
+- Removed `.elementify-api-key` file containing real API key
+- Removed Elementor Pro Activator plugin (intercepted WordPress HTTP requests)
+- Fixed placeholder emails in SECURITY.md and CODE_OF_CONDUCT.md
+
 ## [1.1.0] - 2025-04-20
 
 ### Added

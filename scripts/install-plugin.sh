@@ -23,7 +23,7 @@ usage() {
     echo "  --name <name>        Specify plugin name (default: extracted from zip)"
     echo ""
     echo "Examples:"
-    echo "  $0 elementify-2.0.0.zip"
+    echo "  $0 my-plugin-2.0.0.zip"
     echo "  $0 --name my-plugin ../build/my-plugin.zip"
     exit 1
 }
@@ -155,14 +155,14 @@ if [ "$ACTIVATE_PLUGIN" = "1" ]; then
     done
     
     # Activate using WP-CLI
-    if docker-compose -f ../docker/docker-compose.yml ps | grep -q "wp-test-wordpress.*Up"; then
+    if docker-compose -f ../docker-compose.yml ps | grep -q "wp-test-wordpress.*Up"; then
         echo "Activating $PLUGIN_NAME via WP-CLI..."
-        if docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin is-installed "$PLUGIN_NAME"; then
-            docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin activate "$PLUGIN_NAME"
+        if docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin is-installed "$PLUGIN_NAME"; then
+            docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin activate "$PLUGIN_NAME"
             echo "Plugin activated successfully."
             
             # Check for activation errors
-            if docker-compose -f ../docker/docker-compose.yml exec -T wp-cli wp plugin is-active "$PLUGIN_NAME"; then
+            if docker-compose -f ../docker-compose.yml exec -T wp-cli wp plugin is-active "$PLUGIN_NAME"; then
                 echo "Plugin is active and running."
             else
                 echo "Warning: Plugin activation may have failed."
@@ -176,7 +176,7 @@ if [ "$ACTIVATE_PLUGIN" = "1" ]; then
         fi
     else
         echo "Error: WordPress container is not running."
-        echo "Start the environment with: docker-compose -f ../docker/docker-compose.yml up -d"
+        echo "Start the environment with: docker-compose -f ../docker-compose.yml up -d"
         exit 1
     fi
 fi
@@ -195,5 +195,5 @@ echo ""
 echo "Next steps:"
 echo "1. Visit WordPress admin: http://localhost:${WORDPRESS_PORT:-8080}/wp-admin"
 echo "2. Test the plugin functionality"
-echo "3. Check debug logs if needed: docker-compose -f ../docker/docker-compose.yml logs wordpress"
+echo "3. Check debug logs if needed: docker-compose -f ../docker-compose.yml logs wordpress"
 echo "=========================================="
