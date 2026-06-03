@@ -101,12 +101,36 @@ EOF
     fi
 }
 
+# ── Port collision pre-flight ────────────────────────────────────────────────
+check_ports() {
+    local check_script="${SCRIPT_DIR}/check-ports.sh"
+    if [ ! -x "$check_script" ]; then
+        warn "scripts/check-ports.sh missing or not executable — skipping pre-flight"
+        return 0
+    fi
+    info "Pre-flight: checking ports..."
+    # On --fresh, own containers will be torn down; allow self-collision
+    if $FRESH_START; then
+        info "  (--fresh: skipping check; will tear down own containers first)"
+        return 0
+    fi
+    if ! "$check_script" --quiet; then
+        # Re-run verbose to show the user what's wrong
+        "$check_script" || true
+        err ""
+        err "Port collision blocks startup. See $check_script for resolution hints."
+        exit 1
+    fi
+    info "  ✓ all ports free"
+}
+
 # ── Docker ───────────────────────────────────────────────────────────────────
 start_containers() {
     if $FRESH_START; then
         warn "Fresh start — destroying existing volumes"
         $COMPOSE_CMD -f "$COMPOSE_FILE" down -v 2>/dev/null || true
     fi
+    check_ports
     info "Starting Docker containers..."
     $COMPOSE_CMD -f "$COMPOSE_FILE" up -d --wait
     info "All containers are running."
