@@ -99,6 +99,31 @@ EOF
         # Redirect compose file to use project-specific volumes/paths
         COMPOSE_FILE="${ROOT_DIR}/docker-compose.yml"
     fi
+
+    # ── Per-instance bind-mount paths (CRITICAL for isolation) ─────────────
+    # If PLUGINS_DIR / THEMES_DIR / UPLOADS_DIR are set to overlay-specific
+    # paths, create them + seed plugins/ with the canonical bundle so the
+    # overlay starts with a working baseline (Query Monitor, Debug Bar, etc.)
+    # without polluting any other overlay's plugins dir.
+    for dir_var in PLUGINS_DIR THEMES_DIR UPLOADS_DIR; do
+        v="${!dir_var:-}"
+        # Skip the default (means: same as repo root; nothing to provision)
+        case "$v" in ""|"./plugins"|"./themes"|"./uploads") continue ;; esac
+
+        full_path="${ROOT_DIR}/${v#./}"
+        if [ ! -d "$full_path" ]; then
+            mkdir -p "$full_path"
+            info "  Created per-instance $dir_var → $v"
+            # Seed plugins/ dir with canonical free plugins on first run
+            if [ "$dir_var" = "PLUGINS_DIR" ] && [ -d "${ROOT_DIR}/plugins" ]; then
+                # Copy ONLY committed plugins (top-level dirs + zips), not
+                # any host-mounted-leftover from other overlays.
+                # Safe: only the wp-test-env canonical bundle in ./plugins.
+                cp -r "${ROOT_DIR}/plugins/"* "$full_path/" 2>/dev/null || true
+                info "    Seeded with canonical plugin bundle from ./plugins"
+            fi
+        fi
+    done
 }
 
 # ── Port collision pre-flight ────────────────────────────────────────────────
