@@ -99,6 +99,54 @@ EOF
         # Redirect compose file to use project-specific volumes/paths
         COMPOSE_FILE="${ROOT_DIR}/docker-compose.yml"
     fi
+
+    # ── Per-instance bind-mount paths (CRITICAL for isolation) ─────────────
+    # If PLUGINS_DIR / THEMES_DIR / UPLOADS_DIR are set to overlay-specific
+    # paths, create them so the overlay's bind mounts have a real target.
+    # The template (this repo) intentionally does NOT ship plugins — overlays
+    # are responsible for declaring their own via config/plugins.yaml +
+    # setup.sh's plugin installer (which reads PLUGINS_CONFIG and pulls
+    # from wordpress.org / local / URL).
+    #
+    # An overlay's setup script that calls this setup.sh as a sub-step
+    # MAY pre-populate the per-instance plugins dir with extra plugins
+    # (e.g. capacium-bridge dropped in from a sibling source dir) BEFORE
+    # this function runs — we just guarantee the dir exists, we don't
+    # touch its contents.
+    for dir_var in PLUGINS_DIR THEMES_DIR UPLOADS_DIR; do
+        v="${!dir_var:-}"
+        # Skip the default (means: same as repo root; nothing to provision)
+        case "$v" in ""|"./plugins"|"./themes"|"./uploads") continue ;; esac
+
+        full_path="${ROOT_DIR}/${v#./}"
+        if [ ! -d "$full_path" ]; then
+            mkdir -p "$full_path"
+            info "  Created per-instance $dir_var → $v"
+        fi
+    done
+}
+
+# ── Port collision pre-flight ────────────────────────────────────────────────
+check_ports() {
+    local check_script="${SCRIPT_DIR}/check-ports.sh"
+    if [ ! -x "$check_script" ]; then
+        warn "scripts/check-ports.sh missing or not executable — skipping pre-flight"
+        return 0
+    fi
+    info "Pre-flight: checking ports..."
+    # On --fresh, own containers will be torn down; allow self-collision
+    if $FRESH_START; then
+        info "  (--fresh: skipping check; will tear down own containers first)"
+        return 0
+    fi
+    if ! "$check_script" --quiet; then
+        # Re-run verbose to show the user what's wrong
+        "$check_script" || true
+        err ""
+        err "Port collision blocks startup. See $check_script for resolution hints."
+        exit 1
+    fi
+    info "  ✓ all ports free"
 }
 
 # ── Docker ───────────────────────────────────────────────────────────────────
@@ -107,6 +155,7 @@ start_containers() {
         warn "Fresh start — destroying existing volumes"
         $COMPOSE_CMD -f "$COMPOSE_FILE" down -v 2>/dev/null || true
     fi
+    check_ports
     info "Starting Docker containers..."
     $COMPOSE_CMD -f "$COMPOSE_FILE" up -d --wait
     info "All containers are running."
