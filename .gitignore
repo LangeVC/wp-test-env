@@ -61,3 +61,8 @@ coverage/
 
 # Project environments (isolated state per project)
 envs/
+
+# Plugins live only in overlays — template never ships them. README.md
+# is allowed as a placeholder so the dir exists in fresh clones.
+plugins/*
+!plugins/README.md

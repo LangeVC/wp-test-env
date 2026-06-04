@@ -102,9 +102,17 @@ EOF
 
     # ── Per-instance bind-mount paths (CRITICAL for isolation) ─────────────
     # If PLUGINS_DIR / THEMES_DIR / UPLOADS_DIR are set to overlay-specific
-    # paths, create them + seed plugins/ with the canonical bundle so the
-    # overlay starts with a working baseline (Query Monitor, Debug Bar, etc.)
-    # without polluting any other overlay's plugins dir.
+    # paths, create them so the overlay's bind mounts have a real target.
+    # The template (this repo) intentionally does NOT ship plugins — overlays
+    # are responsible for declaring their own via config/plugins.yaml +
+    # setup.sh's plugin installer (which reads PLUGINS_CONFIG and pulls
+    # from wordpress.org / local / URL).
+    #
+    # An overlay's setup script that calls this setup.sh as a sub-step
+    # MAY pre-populate the per-instance plugins dir with extra plugins
+    # (e.g. capacium-bridge dropped in from a sibling source dir) BEFORE
+    # this function runs — we just guarantee the dir exists, we don't
+    # touch its contents.
     for dir_var in PLUGINS_DIR THEMES_DIR UPLOADS_DIR; do
         v="${!dir_var:-}"
         # Skip the default (means: same as repo root; nothing to provision)
@@ -114,14 +122,6 @@ EOF
         if [ ! -d "$full_path" ]; then
             mkdir -p "$full_path"
             info "  Created per-instance $dir_var → $v"
-            # Seed plugins/ dir with canonical free plugins on first run
-            if [ "$dir_var" = "PLUGINS_DIR" ] && [ -d "${ROOT_DIR}/plugins" ]; then
-                # Copy ONLY committed plugins (top-level dirs + zips), not
-                # any host-mounted-leftover from other overlays.
-                # Safe: only the wp-test-env canonical bundle in ./plugins.
-                cp -r "${ROOT_DIR}/plugins/"* "$full_path/" 2>/dev/null || true
-                info "    Seeded with canonical plugin bundle from ./plugins"
-            fi
         fi
     done
 }
