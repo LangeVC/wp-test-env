@@ -8,6 +8,8 @@ on:
 jobs:
   # ── GitHub Release Asset (ZIP) ──────────────────────────────────────────
   package-zip:
+    # GitHub-only: never runs on the Forgejo mirror side.
+    if: github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -42,6 +44,8 @@ jobs:
 
   # ── Docker Image Build & Push ───────────────────────────────────────────
   build-docker:
+    # GitHub-only: never runs on the Forgejo mirror side.
+    if: github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     permissions:
       packages: write
