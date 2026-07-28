@@ -9,6 +9,9 @@
 
 > Professional Docker-based WordPress testing environment for plugin development, quality assurance, automated testing workflows, and AI agent integration.
 
+**Repository provenance.** The canonical home of this repository is Forgejo at
+`git.langevc.com/langevc/wp-test-env`. The GitHub repository is a mirror.
+
 ## 🚀 Quick Start
 
 ```bash

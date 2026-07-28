@@ -4,6 +4,8 @@
 
 **TL;DR:** This is a **template**. It is not the place where your project lives. You consume it from your own project repository as an overlay. Never fork this repo to add project-specific plugins/themes/configs.
 
+**Canonical source.** The canonical home of this template is Forgejo at `git.langevc.com/langevc/wp-test-env`. The GitHub repository is a mirror. Either remote works for cloning the template.
+
 ---
 
 ## ⚠ Before you touch anything
